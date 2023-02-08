@@ -1,6 +1,6 @@
 [book]
-authors = ["Magamedrasul Ibragimov"]
+authors = ["Magamedrasul Ibragimov", "Lev Soukhanov"]
 language = "en"
 multilingual = false
 src = "src"
-title = "swirl"
+title = "Nouns Vortex"
