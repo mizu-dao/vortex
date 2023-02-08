@@ -2,6 +2,9 @@ name: mdbook -> gh pages
 
 on: [push, pull_request]
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-20.04
