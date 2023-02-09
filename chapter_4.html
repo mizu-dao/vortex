@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Nouns Vortex - Nouns Vortex</title>
+        <title>Nounism - Nouns Vortex</title>
 
 
         <!-- Custom HTML head -->
@@ -80,7 +80,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html" class="active"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Nounism</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html" class="active"><strong aria-hidden="true">4.</strong> Nounism</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -142,26 +142,38 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
-<h2 id="presented-by-team-水-mizu"><a class="header" href="#presented-by-team-水-mizu"><div align="center">Presented by team 水 (Mizu)</div></a></h2>
-<div align="right"><i>telegram contacts: @levs57, @curryrasul</i></div>
-<p>This is our R&amp;D team presentation for <a href="https://prop.house/nouns/private-voting-research-sprint">Noun's DAO voting research sprint</a>.</p>
-<h2 id="about-us"><a class="header" href="#about-us">About us</a></h2>
-<p>We are a team of friends, we both work in zk and are passionate at advancing the field forward, both theoretically and practically.</p>
-<p><strong>Rasul:</strong> I am systems engineer, currently working on RLN (Rate-Limiting Nullifier) at Ethereum Foundation in Privacy &amp; Scaling Explorations team, and mainly specialize in zk circuits engineering and Rust.
-I have experience of participating (and winning) in various blockchain hackathons &amp; contests; for the last hackathon we built VoAn (ANonymous VOting protocol) on NEAR (<a href="https://curryrasul.github.io/voan/">explanation</a> and <a href="https://voan.site">app</a>).</p>
-<p><strong>Lev:</strong> I have the research mathematician background (and several publications in algebraic geometry which are hardly relevant in this scope). I have just participated in Ethereum Foundation's grant project devoted to MACI voting system, and with my coauthor we've developed <a href="https://morgana-proofs.github.io/mpc-maci/master/">this MPC algorithm</a> I'm very proud of. I also bear the <a href="https://opensea.io/assets/ethereum/0x4af905a972eab5020f965889ead5bb4a20c1c2c3/5">Groth16 Hacker Soulbound</a>, which was given to the ten winners of ZK Hack x Geometry Puzzle. I mostly design stuff, and think about security.</p>
-<h2 id="the-design"><a class="header" href="#the-design">The design</a></h2>
-<p>While this presentation is supposed be mostly about our team and our achievements, we have judged that our most relevant achievement is that we have actually thought about this kind of problems for a long time.</p>
-<p>Therefore, the best way of representing us is actually laying down a detailed exposition of our proposed design. There are some gaps in it that will need to be filled in during R&amp;D process, but we believe that &quot;research&quot; part is almost ready at this point, and proudly propose the following ➜➜➜</p>
+<h2 id="水-optimistic-proofs-水"><a class="header" href="#水-optimistic-proofs-水"><div align="center">水 Optimistic proofs 水</div></a></h2>
+<p>Here, we will explain our scaling mechanic.</p>
+<p>First, let us recall that in normal Tornado Cash the user actually need to provide two proofs - one on the deposit, of the correct update of the Merkle tree, and the other on the withdrawal.</p>
+<h2 id="merkle-tree-update-issue-and-possible-solutions"><a class="header" href="#merkle-tree-update-issue-and-possible-solutions">Merkle tree update issue and possible solutions</a></h2>
+<p>For Nouns Vortex, the tree update becomes a much more pressing issue. The appropriate &quot;naive&quot; way of doing it would involve changing <code>ERC721Checkpointable.sol</code> in such a way that any transfer or delegation would incur the update of a tree. This would incur a huge additional gas cost on every transfer, not to mention that it is actually just incompatible with allowance mechanic - smart contract is not able to provide us with the proof.</p>
+<p>In our framework, the natural solution looks as follows: proposer, at the start of the voting, needs to send two transactions: first one &quot;takes the snapshot&quot;, and the second one submits the Merkle tree root of all the accounts with nonzero voting power, ordered lexicographically, together with their snapshot states of voting power and <code>commit</code>'s.</p>
+<p>Now, we need some sort of the challenge game to prevent the proposer from submitting an incorrect Merkle root. The most naive game would be the following 1-round interaction:</p>
+<pre><code>Proposer: propose Merkle tree root, put up some collateral
+
+Challenger: calculate Merkle tree root on-chain, if it is different - slash the proposer and take the collateral
+</code></pre>
+<p>This, however, requires a lot of gas. We are considering low-round games as possible replacement, to reduce collateral requirement on the proposer.</p>
+<p>Generally, this is not too big of an issue, because this game can be played in parallel with normal voting flow (and any user that is executing a proof against an incorrect Merkle root is fraudulent anyway).</p>
+<p>We reserve this part for further research.</p>
+<h2 id="sub-proposal"><a class="header" href="#sub-proposal"><div align="center"> Sub-proposal! </div></a></h2>
+<h2 id="nounism----an-optimistic-proof-checker-from-nouns-ecosystem"><a class="header" href="#nounism----an-optimistic-proof-checker-from-nouns-ecosystem">Nounism ⌐◨-◨ : an optimistic proof checker from Nouns ecosystem</a></h2>
+<p>This part of the system is a separate smart contract, which, in our opinon, should be exposed to everyone for potential integration. Nouns DAO, therefore, will be able to contribute to the general Ethereum ecosystem. Specifically, it will allow anyone to use the same system to check their proofs at low cost, in particular, any roll-up and any voting or financial privacy protocol will be able to use it. Prototype of one such application - communicated to authors by @twisterdev is expected to be presented on Eth Denver.</p>
+<p>The basic features of contract are really simple. This is, basically, a pool for Groth16 proofs. Each proof is put there on a timelock, and after the required time has passed, it &quot;matures&quot;.</p>
+<p>Anyone, at any point, can challenge the immature proof and force it to be calculated. A small collateral needs to be deposited with the proof to ensure that it can pay for its gas.</p>
+<p>Multiple proofs can be deposited in the same transaction, to also save on 27k gas for signature check.</p>
+<hr />
+<p>The only subtle issue to be tackled is the size of collateral. We would like to make it fully automatic and ungoverned from the start, but it is impossible to fully predict the upcoming gas prices. While the condition of gas prices suddenly spiking and then staying consistently high for few days is unusual, this must be settled in some way. We have different ideas on this topic, the simplest one would be requiring at least 3x collateral based on observed avg gas price on last few deposits, and supporting a small (limited from above) automatic treasury that covers the gas cost in case of collateral deficit.</p>
+<p>In the unlikely scenario when even this doesn't work (for example, treasure got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-
-                            <a rel="next" href="chapter_2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
+                            <a rel="prev" href="chapter_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
                             </a>
+
 
                         <div style="clear: both"></div>
                     </nav>
@@ -169,10 +181,10 @@ I have experience of participating (and winning) in various blockchain hackathon
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-
-                    <a rel="next" href="chapter_2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
+                    <a rel="prev" href="chapter_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
                     </a>
+
             </nav>
 
         </div>
