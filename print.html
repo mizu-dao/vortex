@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Nounism</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Nounism</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -220,6 +220,77 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <hr />
 <p>The only subtle issue to be tackled is the size of collateral. We would like to make it fully automatic and ungoverned from the start, but it is impossible to fully predict the upcoming gas prices. While the condition of gas prices suddenly spiking and then staying consistently high for few days is unusual, this must be settled in some way. We have different ideas on this topic, the simplest one would be requiring at least 3x collateral based on observed avg gas price on last few deposits, and supporting a small (limited from above) automatic treasury that covers the gas cost in case of collateral deficit.</p>
 <p>In the unlikely scenario when even this doesn't work (for example, treasure got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-homomorphic-voting-scheme-水"><a class="header" href="#水-homomorphic-voting-scheme-水"><div align="center">水 Homomorphic voting scheme 水</div></a></h2>
+<p>We assume that we have achieved the following state:</p>
+<ul>
+<li>
+<p>There is a Merkle tree with leaves <code>leaf[i]</code> with <code>i</code> goes through the set of all users who had non-zero voting balance at vote initialization block, in some canonical order. Leaf is calculated as <code>leaf[i]=H(commit[i], nouns[i])</code>, where <code>nouns</code> is voting power at the checkpoint. In what follows, we assume this root is correct; otherwise, voting will be challenged and cancelled.</p>
+</li>
+<li>
+<p>There is a set of registered tally authorities, their decryption public keys live in the map <code>auth_pub</code>. We assume that there is also a decyption public key <code>D</code> which is a sum of <code>auth_pub</code>. It can be either calculated onchain, or also supplied by proposer and calculated optimistically.</p>
+</li>
+<li>
+<p>We also assume we are given some independent generators of babyJubJub, denoted <code>G, Y, N</code>. </p>
+</li>
+</ul>
+<p>Now, in order to vote, user needs to create the following proof.</p>
+<p>Public inputs: <code>voting_id, voting_merkle_root, null, enc_vote</code>, which are subject to the following relations:</p>
+<blockquote>
+<p>Public check: <code>voting_id</code> coincides with the current public voting id, <code>voting_merkle_root</code> coincides with supplied Merkle root.</p>
+</blockquote>
+<blockquote>
+<p>There exists the leaf of the Merkle tree <code>voting_merkle_root</code>, denoted further as <code>leaf</code>, which decomposes (eventually) to private inputs <code>key, force, nouns</code>, subject to some relations:</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p><code>H(key.root, voting_id) = null</code> - unique nullifier to prevent double-voting</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>There is a value <code>vote_value</code> which is subject to some additional relations:</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>If <code>force != 0</code>, there is a leaf of the force Merkle tree <code>force[l] = H(voting_id, vote_value)</code>.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>Else, there are <code>key.k</code> signatures of the message <code>(voting_id, vote_value)</code> with different public keys from an array <code>key.P</code>.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><code>0 &lt;= vote_value &lt;= 2</code>. Denote <code>vote_point = 0</code> if <code>vote_value == 2</code>, <code>vote_point = Y</code> if <code>vote_value == 1</code>, and <code>vote_point = N</code> if <code>vote_value == 0</code>.</p>
+</blockquote>
+<blockquote>
+<p>The value <code>enc_vote</code> is a homomorphic El Gamal encryption of the vote, namely a pair of points: <code>(C, K)</code>, where <code>C = (vote_point * nouns) + (rand * D)</code> and <code>K = rand * G</code> for some random scalar <code>rand</code>.</p>
+</blockquote>
+<p>Now, these proofs should be relayed on-chain and put in the proof-checking pool. We suggest that community spins up few public relayers for this purpose. Submitting proofs from some external EOA is fine, too, but it will require some collateral (relayers will require collateral too, but relatively small because they will submit proof in a batch).</p>
+<p>When the proof-checking delay has passed, the resulting values <code>enc_vote</code> are submitted back and added up. This can also be done optimistically without much effort.</p>
+<p>Let us denote the total sum of all valid <code>enc_vote[i]</code> as <code>enc_result = (C_res, K_res)</code>.</p>
+<p>Now, each decryption authourity <code>i</code> submits <code>dec[i] = priv K_res</code> with the proof that it was formed correctly with <code>priv</code> satisfying <code>priv*G = auth_pub[i]</code>. If they fail to submit it, they are slashed and the voting goes into fallback mode.</p>
+<p>Denote <code>dec</code> to be sum of <code>dec[i]</code>.</p>
+<p>The <code>res_point =  C_res - dec</code>. Now, anyone can provide values <code>yay, nay</code> such that <code>yay*Y + nay*N = res_points</code>. The way to obtain these values is lookup. This lookup is quadratic in the amount of Nouns (which is fine on our scale), but if there will be more voting options, it is possible that the scheme will need to be altered a bit to instead send multiple points.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-fallback-scheme-水"><a class="header" href="#水-fallback-scheme-水"><div align="center">水 Fallback scheme 水</div></a></h2>
+<p>Here, we describe an alternative, simpler scheme which does not encrypt the vote value, and, instead allows to vote with Nouns separately.</p>
+<p>It has few disadvantages; first of all, the on-going amount of yes/no votes is readily observable. Therefore, whale user trying to hide their activity will need a significant amount of effort: they will need to send votes at different timings, and, ideally, submit them to relayer from different ip addresses.</p>
+<p>Because this effort is significant, we suggest that this scheme is only used as a fallback in case one of decryption authorities fails to provide the decryption. The gas cost of the scheme is also higher (due to each Noun being a separate vote); totally, this will determine the amount of collateral the decryption authority needs to provide.</p>
+<p>The changes to the proof are fairly minimal:</p>
+<ol>
+<li>
+<p>Instead of exposing <code>enc_vote</code>, it should expose <code>vote_value</code> itself.</p>
+</li>
+<li>
+<p>Nullifier is calculated as <code>null = H(key.root, voting_id, s)</code> where <code>0 &lt;= s &lt; nouns</code>. This ensures that the holder of <code>nouns</code> voting power can vote exactly <code>nouns</code> times.</p>
+</li>
+</ol>
+<p>Otherwise, the scheme is completely analogous.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-required-frontend-infra-水"><a class="header" href="#水-required-frontend-infra-水"><div align="center">水 Required frontend infra 水</div></a></h2>
+<p>Because our scheme heavily relies on (albeit simple, but still) optimistic validation, we believe that the best way to ensure its security is giving every user a tool to validate vote integrity.</p>
+<p>We suggest that the frontend of the voting site is pinned in IPFS (which is generally a good practice), and there is a short snarkjs script verifying integrity of both the proving pool and initial Merkle tree - the scale more than admits it.</p>
 
                     </main>
 
