@@ -155,7 +155,7 @@
 }
 </code></pre>
 <p>On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing <code>threshold</code> and <code>total</code> corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.</p>
-<p><code>force</code> is a root of a sparse Merkle tree which implements the key-&gt;value array, containing the enforced values (i.e., it has default value <code>-1</code>, and it having value either <code>0, 1, 2</code> at leaf <code>i</code> means that in the proposal <code>i</code> this account will be able to vote only with corresponding value). It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
+<p><code>force</code> is a root of a sparse Merkle tree which implements the key-&gt;value array, containing the enforced values (i.e., it has default value <code>(0,0)</code>, and it having value either <code>0, Y, N</code> at leaf <code>i</code> means that in the proposal <code>i</code> this account will be able to vote only with corresponding value, <code>0</code> corresponding to abstaining, and <code>Y</code> and <code>N</code> being elliptic curve generators corresponding to &quot;yes&quot; and &quot;no&quot; votes). It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
 <p>This finishes the registration phase - no checks are done at this stage at all.</p>
 
                     </main>
