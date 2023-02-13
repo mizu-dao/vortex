@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Nounism</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -155,6 +155,19 @@ I have experience of participating (and winning) in various blockchain hackathon
 <p>While this presentation is supposed be mostly about our team and our achievements, we have judged that our most relevant achievement is that we have actually thought about this kind of problems for a long time.</p>
 <p>Therefore, the best way of representing us is actually laying down a detailed exposition of our proposed design. There are some gaps in it that will need to be filled in during R&amp;D process, but we believe that &quot;research&quot; part is almost ready at this point, and proudly propose the following ➜➜➜</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-1"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-1"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-design-水"><a class="header" href="#水-design-水"><div align="center">水 Design 水</div></a></h2>
+<ul>
+<li>
+<p><a href="./chapter_2_1.html">Main idea</a></p>
+</li>
+<li>
+<p><a href="./chapter_2_2.html">Additional tecnhiques</a></p>
+</li>
+<li>
+<p><a href="./chapter_2_3.html">Tl ; dr</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-2"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-2"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-design-rationale-and-outline-水"><a class="header" href="#水-design-rationale-and-outline-水"><div align="center">水 Design rationale and outline 水</div></a></h2>
 <p>We would like to briefly state our general design goals, to ensure that we are on the same page with the DAO.</p>
 <ul>
@@ -172,15 +185,55 @@ I have experience of participating (and winning) in various blockchain hackathon
 <p>That leads us to some decisions. First of all, we regrettably reject any notion of non-coercibility. The best current solution in this direction is MACI, and while one of the authors works on improving its centralized dependencies, it is very far from being figured out.</p>
 <p>We understand that voter collusion or bribing might be an issue, but we also do not feel that non-coercibility notion provides enough incentives against malicious 51% attacks; maybe only improves situation a little bit. Therefore, we would recommend DAO to continue using the veto power against bribing attacks, and at the same time to keep researching into the game-theoretic mechanisms allowing to eventually replace it (likely, with some sort of Schelling point mechanic and ragequit option).</p>
 <p>Our technique is a merge of two approaches.</p>
-<p>The main approach we want to employ is similar in nature to Tornado.Cash, Semaphore and similar projects. One of the authors have implemented it in <a href="https://voan.site">VoAn</a>. By design, it hides the voter identity, but can not hide the vote power. Naively, this can be fixed by requiring to vote with each Noun separately, but that is inconvenient.</p>
+<p>The main approach we want to employ is similar in nature to Tornado.Cash, Semaphore and similar projects. One of the authors have implemented it in <a href="http://voan.site">VoAn</a>. By design, it hides the voter identity, but can not hide the vote power. Naively, this can be fixed by requiring to vote with each Noun separately, but that is inconvenient.</p>
 <p>Second approach is using homomorphic ElGamal encryption and lookup tables, similar to <a href="https://eprint.iacr.org/2020/033">Open Vote Network</a>. This approach is sound, however it requires every voter to not DoS the protocol after the first round. As we do not want to require everyone to deposit a big collateral, we use similar, but distinct method allowing us to separate voters from tally authorities. We require n-of-n secrecy threshold for them, and inclusion in the tally authorities must be permissionless; therefore DoS attack is possible. We, however, will require the collateral from an authority proportional to the expected cost of doing the voting in a non-efficient way described above; that way such an attacker would only delay the voting. Our design rationale here is that bigger accounts who benefit the most from this upgraded value hiding system will be likely able to present the required collateral and actually have an incentive to participate as authority to ensure the secrecy of their own vote.</p>
 <p>We also use two additional techniques, one to deal with multisigs and hardware wallets, and one to deal with scalability.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-3"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-3"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-additional-techniques-水"><a class="header" href="#水-additional-techniques-水"><div align="center">水 Additional techniques 水</div></a></h2>
 <p>For multisigs and hardware wallets, we suggest creating a key rotation mechanic, allowing any account (either EOA or smart contract) to register in the system. It then obtains a key which , internally, can act as a multisig with some reasonable threshold adjustable in a registration phase. We also provide a system which allows to commit to the vote from the account, in case this level of security is still not enough for some hardware wallet users.</p>
-<p><em>Should we implement ECDSA signature option which would support hardware wallets natively? It requires quite a beefy hardware to work, sorry state of affairs can be checked <a href="https://github.com/0xPARC/circom-ecdsa">here.</a>. Currently we believe it is optional.</em></p>
+<p><em>Should we implement ECDSA signature option which would support hardware wallets natively? It requires quite a beefy hardware to work, sorry state of affairs can be checked <a href="https://github.com/0xPARC/circom-ecdsa">here</a>. Currently we believe it is optional.</em></p>
 <p>Second technique (which we call &quot;mini-rollup&quot;) is our main gas cost optimization trick. It basically boils down to doing almost <em>everything</em> optimistically, namely, both validating the proofs and validating the required Merkle tree root. However, we argue that it doesn't incur most of the issues normally related to optimistic rollups because the challenge game is 1-round for proofs, and for Merkle tree it can be played in parallel with voting (this is the part where we are figuring out exact details). This also, apparently, gives the Nouns DAO an interesting promotion opportunity which we will describe further.</p>
 <p>One could argue that we actually could instead scale the system using some custom zk-recursion technique. However, we believe such undertaking to be out of scale for this project, both in terms of our operational capability and auditability of dependencies. Therefore, we'd like to come up with surprisingly effective simple solution, not the one that is surprisingly hard to execute.</p>
 <p>In what follows, we provide a description of each of these systems in detail, in the following order: registration, optimistic proof pool, homomorphic approach, fallback approach.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-2"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-2"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-tl--dr-水"><a class="header" href="#水-tl--dr-水"><div align="center">水 Tl ; dr 水</div></a></h2>
+<p>Here we provide non-technical high-level explanation of our system.</p>
+<ol>
+<li>
+<p>Users can register and deploy public key (or even multisig), which they can then rotate at will by submitting the re-register transaction on-chain.</p>
+</li>
+<li>
+<p>If user doesn't want to use hot private keys for voting at all, they can use an alternative system, which enforces the vote by submitting a commitment from the main account on-chain.</p>
+<ul>
+<li>If there is a significant improvement in ecdsa-circom, the hardware wallets can be integrated directly, however, currently we believe this is infeasible for most users.</li>
+</ul>
+</li>
+<li>
+<p>Otherwise, individual proposals do not require registration for voting.</p>
+</li>
+<li>
+<p>Each proposal has a permissionless set of tallying authorities. To register as an authority, user must deposit a collateral. These authorities have n-of-n secrecy threshold to collectively read the voting power of individual votes (i.e., if they all collude, it is possible to de-anonymize votes of whale accounts). Therefore, we believe it will be rational for whale accounts interested in their privacy to register as the tallying authorities.</p>
+</li>
+<li>
+<p>Due to having n-of-n secrecy threshold, it also has 1-of-n liveness threshold. In case any of the authorities fails to follow the protocol, they are slashed (and the collateral is used to compensate gas expenses). The voting then goes into the fallback mode.</p>
+</li>
+<li>
+<p>Normal voting mode uses account-hiding mechanic similar to Tornado Cash, and El Gamal homomorphic encryption to encrypt votes (similar to Open Vote Network).</p>
+</li>
+<li>
+<p>Fallback voting uses account-hiding mechanic, and allows user to vote <code>s</code> times if they have <code>s</code> voting power. Big accounts in this regime will need to send votes separately and ensure they can not be correlated using timing / ip sniffing.</p>
+</li>
+<li>
+<p>All zero knowledge proofs can be submitted from any on-chain account. The community is advised to spin up a few relayer servers to pass these proofs in batches.</p>
+</li>
+<li>
+<p>The proofs are submitted to optimistic proof-checking pool to drastically reduce the cost of the system.</p>
+</li>
+<li>
+<p>Every voter's frontend has a .js script to check voting integrity and alert them in case of the submission of the incorrect proof.</p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-registration-水"><a class="header" href="#水-registration-水"><div align="center">水 Registration 水</div></a></h2>
 <p>The registration phase looks as follows. Every account <code>A</code> can register in a system by sending a hash of the following pair: <code>commit = H(key, force)</code>.</p>
 <p>This is updateable, and will need a system similar to  <code>ERC721Checkpointable.sol</code> by Nouns DAO, because for a particular voting the snapshot of the commitment needs to be considered - notably, taken not at the proposal block (as done for Nouns count), but at the vote starting block.</p>
@@ -188,19 +241,27 @@ I have experience of participating (and winning) in various blockchain hackathon
 <p>Now, we explain what is contained in this commitment. It is not enforced at this stage, but it is an appropriate place for an explanation.</p>
 <p><code>key</code> is a hash of the following data: </p>
 <pre><code>{
-    k, n: felt, // satisfying 0 &lt;= k &lt;= n &lt;= LIMIT; suggest LIMIT=7;
-    P[n] : pubkey // an array of n public keys in babyJubJub curve
-    root: felt // a proof field element working as a seed for nullifiers
+    threshold, total: Fp, // satisfying 1 &lt;= threshold &lt;= total &lt;= LIMIT; suggest LIMIT=7;
+    pubkeys[total] : pubkey // an array of n public keys in babyJubJub curve
+    seed : Fp // a random nonce used to produce nullifiers
 }
 </code></pre>
-<p>On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing <code>k</code> and <code>n</code> corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.</p>
-<p><code>force</code> is either 0 or a root of a Merkle tree that contains in (some) leaves the enforced vote values in a form <code>H(voting_id, vote_value)</code>. It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
+<p>On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing <code>threshold</code> and <code>total</code> corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.</p>
+<p><code>force</code> is a root of a sparse Merkle tree which implements the key-&gt;value array, containing the enforced values (i.e., it has default value <code>-1</code>, and it having value either <code>0, 1, 2</code> at leaf <code>i</code> means that in the proposal <code>i</code> this account will be able to vote only with corresponding value). It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
 <p>This finishes the registration phase - no checks are done at this stage at all.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-3"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-3"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-optimistic-proofs-水"><a class="header" href="#水-optimistic-proofs-水"><div align="center">水 Optimistic proofs 水</div></a></h2>
-<p>Here, we will explain our scaling mechanic.</p>
-<p>First, let us recall that in normal Tornado Cash the user actually need to provide two proofs - one on the deposit, of the correct update of the Merkle tree, and the other on the withdrawal.</p>
-<h2 id="merkle-tree-update-issue-and-possible-solutions"><a class="header" href="#merkle-tree-update-issue-and-possible-solutions">Merkle tree update issue and possible solutions</a></h2>
+<ul>
+<li>
+<p><a href="./chapter_4_1.html">Merkle tree update</a></p>
+</li>
+<li>
+<p><a href="./chapter_4_2.html">Nounism</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-7"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-7"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-merkle-tree-update-水"><a class="header" href="#水-merkle-tree-update-水"><div align="center">水 Merkle tree update 水</div></a></h2>
+<p>First, let us recall that, for example, in Tornado Cash the user actually need to provide two proofs - one on the deposit, of the correct update of the Merkle tree, and the other on the withdrawal.</p>
 <p>For Nouns Vortex, the tree update becomes a much more pressing issue. The appropriate &quot;naive&quot; way of doing it would involve changing <code>ERC721Checkpointable.sol</code> in such a way that any transfer or delegation would incur the update of a tree. This would incur a huge additional gas cost on every transfer, not to mention that it is actually just incompatible with allowance mechanic - smart contract is not able to provide us with the proof.</p>
 <p>In our framework, the natural solution looks as follows: proposer, at the start of the voting, needs to send two transactions: first one &quot;takes the snapshot&quot;, and the second one submits the Merkle tree root of all the accounts with nonzero voting power, ordered lexicographically, together with their snapshot states of voting power and <code>commit</code>'s.</p>
 <p>Now, we need some sort of the challenge game to prevent the proposer from submitting an incorrect Merkle root. The most naive game would be the following 1-round interaction:</p>
@@ -211,6 +272,8 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <p>This, however, requires a lot of gas. We are considering low-round games as possible replacement, to reduce collateral requirement on the proposer.</p>
 <p>Generally, this is not too big of an issue, because this game can be played in parallel with normal voting flow (and any user that is executing a proof against an incorrect Merkle root is fraudulent anyway).</p>
 <p>We reserve this part for further research.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-8"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-8"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-nounism-水"><a class="header" href="#水-nounism-水"><div align="center">水 Nounism 水</div></a></h2>
 <h2 id="sub-proposal"><a class="header" href="#sub-proposal"><div align="center"> Sub-proposal! </div></a></h2>
 <h2 id="nounism----an-optimistic-proof-checker-from-nouns-ecosystem"><a class="header" href="#nounism----an-optimistic-proof-checker-from-nouns-ecosystem">Nounism ⌐◨-◨ : an optimistic proof checker from Nouns ecosystem</a></h2>
 <p>This part of the system is a separate smart contract, which, in our opinon, should be exposed to everyone for potential integration. Nouns DAO, therefore, will be able to contribute to the general Ethereum ecosystem. Specifically, it will allow anyone to use the same system to check their proofs at low cost, in particular, any roll-up and any voting or financial privacy protocol will be able to use it. Prototype of one such application - communicated to authors by @twisterdev is expected to be presented on Eth Denver.</p>
@@ -219,13 +282,13 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <p>Multiple proofs can be deposited in the same transaction, to also save on 27k gas for signature check.</p>
 <hr />
 <p>The only subtle issue to be tackled is the size of collateral. We would like to make it fully automatic and ungoverned from the start, but it is impossible to fully predict the upcoming gas prices. While the condition of gas prices suddenly spiking and then staying consistently high for few days is unusual, this must be settled in some way. We have different ideas on this topic, the simplest one would be requiring at least 3x collateral based on observed avg gas price on last few deposits, and supporting a small (limited from above) automatic treasury that covers the gas cost in case of collateral deficit.</p>
-<p>In the unlikely scenario when even this doesn't work (for example, treasure got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-4"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<p>In the unlikely scenario when even this doesn't work (for example, treasury got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-9"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-9"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-homomorphic-voting-scheme-水"><a class="header" href="#水-homomorphic-voting-scheme-水"><div align="center">水 Homomorphic voting scheme 水</div></a></h2>
 <p>We assume that we have achieved the following state:</p>
 <ul>
 <li>
-<p>There is a Merkle tree with leaves <code>leaf[i]</code> with <code>i</code> goes through the set of all users who had non-zero voting balance at vote initialization block, in some canonical order. Leaf is calculated as <code>leaf[i]=H(commit[i], nouns[i])</code>, where <code>nouns</code> is voting power at the checkpoint. In what follows, we assume this root is correct; otherwise, voting will be challenged and cancelled.</p>
+<p>There is a Merkle tree with leaves <code>leaf[i]</code> where <code>i</code> runs through the set of all users who had non-zero voting balance at vote initialization block, in some canonical order. Leaf is calculated as <code>leaf[i] = H(commit[i], nouns[i])</code>, where <code>nouns</code> is voting power at the checkpoint. In what follows, we assume this root is correct; otherwise, voting will be challenged and cancelled.</p>
 </li>
 <li>
 <p>There is a set of registered tally authorities, their decryption public keys live in the map <code>auth_pub</code>. We assume that there is also a decyption public key <code>D</code> which is a sum of <code>auth_pub</code>. It can be either calculated onchain, or also supplied by proposer and calculated optimistically.</p>
@@ -236,43 +299,41 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 </ul>
 <p>Now, in order to vote, user needs to create the following proof.</p>
 <p>Public inputs: <code>voting_id, voting_merkle_root, null, enc_vote</code>, which are subject to the following relations:</p>
-<blockquote>
+<ul>
+<li>
 <p>Public check: <code>voting_id</code> coincides with the current public voting id, <code>voting_merkle_root</code> coincides with supplied Merkle root.</p>
-</blockquote>
-<blockquote>
+</li>
+<li>
 <p>There exists the leaf of the Merkle tree <code>voting_merkle_root</code>, denoted further as <code>leaf</code>, which decomposes (eventually) to private inputs <code>key, force, nouns</code>, subject to some relations:</p>
-</blockquote>
-<blockquote>
-<blockquote>
-<p><code>H(key.root, voting_id) = null</code> - unique nullifier to prevent double-voting</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<p>There is a value <code>vote_value</code> which is subject to some additional relations:</p>
-</blockquote>
-<blockquote>
-<blockquote>
-<p>If <code>force != 0</code>, there is a leaf of the force Merkle tree <code>force[l] = H(voting_id, vote_value)</code>.</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
-<p>Else, there are <code>key.k</code> signatures of the message <code>(voting_id, vote_value)</code> with different public keys from an array <code>key.P</code>.</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<p><code>0 &lt;= vote_value &lt;= 2</code>. Denote <code>vote_point = 0</code> if <code>vote_value == 2</code>, <code>vote_point = Y</code> if <code>vote_value == 1</code>, and <code>vote_point = N</code> if <code>vote_value == 0</code>.</p>
-</blockquote>
-<blockquote>
-<p>The value <code>enc_vote</code> is a homomorphic El Gamal encryption of the vote, namely a pair of points: <code>(C, K)</code>, where <code>C = (vote_point * nouns) + (rand * D)</code> and <code>K = rand * G</code> for some random scalar <code>rand</code>.</p>
-</blockquote>
+</li>
+<li>
+<p><code>H(key.seed, voting_id) = null</code> - unique nullifier to prevent double-voting</p>
+</li>
+<li>
+<p>There is an elliptic curve point <code>vote_value</code> which is subject to some additional relations:</p>
+<ul>
+<li>
+<p>The leaf  of the force Merkle tree <code>force[i] == vote_value</code> or <code>force[i] == (0, 0)</code>.</p>
+</li>
+<li>
+<p>If it was <code>(0, 0)</code>, there are <code>key.threshold</code> signatures of the message <code>(voting_id, H(vote_value, seed))</code> with different public keys from an array <code>key.pubkeys</code>. // here, additional hashing with seed done to prevent this signatures from revealing private information, so they can be exchanged over insecure channel</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>vote_value = 0</code> or <code>Y</code> or <code>N</code>.</p>
+</li>
+<li>
+<p>The value <code>enc_vote</code> is a homomorphic El Gamal encryption of the vote, namely a pair of points: <code>(C, K)</code>, where <code>C = (vote_value * nouns) + (rand * D)</code> and <code>K = rand * G</code> for some random scalar <code>rand</code>.</p>
+</li>
+</ul>
 <p>Now, these proofs should be relayed on-chain and put in the proof-checking pool. We suggest that community spins up few public relayers for this purpose. Submitting proofs from some external EOA is fine, too, but it will require some collateral (relayers will require collateral too, but relatively small because they will submit proof in a batch).</p>
 <p>When the proof-checking delay has passed, the resulting values <code>enc_vote</code> are submitted back and added up. This can also be done optimistically without much effort.</p>
 <p>Let us denote the total sum of all valid <code>enc_vote[i]</code> as <code>enc_result = (C_res, K_res)</code>.</p>
-<p>Now, each decryption authourity <code>i</code> submits <code>dec[i] = priv K_res</code> with the proof that it was formed correctly with <code>priv</code> satisfying <code>priv*G = auth_pub[i]</code>. If they fail to submit it, they are slashed and the voting goes into fallback mode.</p>
+<p>Now, each decryption authourity <code>i</code> submits <code>dec[i] = priv K_res</code> with the proof that it was formed correctly with their private key <code>priv</code> satisfying <code>priv*G = auth_pub[i]</code>. If they fail to submit it, they are slashed and the voting goes into fallback mode.</p>
 <p>Denote <code>dec</code> to be sum of <code>dec[i]</code>.</p>
 <p>The <code>res_point =  C_res - dec</code>. Now, anyone can provide values <code>yay, nay</code> such that <code>yay*Y + nay*N = res_points</code>. The way to obtain these values is lookup. This lookup is quadratic in the amount of Nouns (which is fine on our scale), but if there will be more voting options, it is possible that the scheme will need to be altered a bit to instead send multiple points.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-5"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-10"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-10"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-fallback-scheme-水"><a class="header" href="#水-fallback-scheme-水"><div align="center">水 Fallback scheme 水</div></a></h2>
 <p>Here, we describe an alternative, simpler scheme which does not encrypt the vote value, and, instead allows to vote with Nouns separately.</p>
 <p>It has few disadvantages; first of all, the on-going amount of yes/no votes is readily observable. Therefore, whale user trying to hide their activity will need a significant amount of effort: they will need to send votes at different timings, and, ideally, submit them to relayer from different ip addresses.</p>
@@ -283,11 +344,11 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <p>Instead of exposing <code>enc_vote</code>, it should expose <code>vote_value</code> itself.</p>
 </li>
 <li>
-<p>Nullifier is calculated as <code>null = H(key.root, voting_id, s)</code> where <code>0 &lt;= s &lt; nouns</code>. This ensures that the holder of <code>nouns</code> voting power can vote exactly <code>nouns</code> times.</p>
+<p>Nullifier is calculated as <code>null = H(key.seed, voting_id, s)</code> where <code>0 &lt;= s &lt; nouns</code>. This ensures that the holder of <code>nouns</code> voting power can vote exactly <code>nouns</code> times.</p>
 </li>
 </ol>
 <p>Otherwise, the scheme is completely analogous.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-6"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-11"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-11"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-required-frontend-infra-水"><a class="header" href="#水-required-frontend-infra-水"><div align="center">水 Required frontend infra 水</div></a></h2>
 <p>Because our scheme heavily relies on (albeit simple, but still) optimistic validation, we believe that the best way to ensure its security is giving every user a tool to validate vote integrity.</p>
 <p>We suggest that the frontend of the voting site is pinned in IPFS (which is generally a good practice), and there is a short snarkjs script verifying integrity of both the proving pool and initial Merkle tree - the scale more than admits it.</p>

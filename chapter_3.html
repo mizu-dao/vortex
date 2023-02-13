@@ -80,7 +80,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Nounism</a></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -149,20 +149,20 @@
 <p>Now, we explain what is contained in this commitment. It is not enforced at this stage, but it is an appropriate place for an explanation.</p>
 <p><code>key</code> is a hash of the following data: </p>
 <pre><code>{
-    k, n: felt, // satisfying 0 &lt;= k &lt;= n &lt;= LIMIT; suggest LIMIT=7;
-    P[n] : pubkey // an array of n public keys in babyJubJub curve
-    root: felt // a proof field element working as a seed for nullifiers
+    threshold, total: Fp, // satisfying 1 &lt;= threshold &lt;= total &lt;= LIMIT; suggest LIMIT=7;
+    pubkeys[total] : pubkey // an array of n public keys in babyJubJub curve
+    seed : Fp // a random nonce used to produce nullifiers
 }
 </code></pre>
-<p>On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing <code>k</code> and <code>n</code> corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.</p>
-<p><code>force</code> is either 0 or a root of a Merkle tree that contains in (some) leaves the enforced vote values in a form <code>H(voting_id, vote_value)</code>. It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
+<p>On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing <code>threshold</code> and <code>total</code> corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.</p>
+<p><code>force</code> is a root of a sparse Merkle tree which implements the key-&gt;value array, containing the enforced values (i.e., it has default value <code>-1</code>, and it having value either <code>0, 1, 2</code> at leaf <code>i</code> means that in the proposal <code>i</code> this account will be able to vote only with corresponding value). It basically just contains compressed commands that must be fulfilled by voting from this account.</p>
 <p>This finishes the registration phase - no checks are done at this stage at all.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="chapter_2_3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -176,7 +176,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="chapter_2_3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

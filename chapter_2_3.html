@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Design - Nouns Vortex</title>
+        <title>Tl ; dr - Nouns Vortex</title>
 
 
         <!-- Custom HTML head -->
@@ -80,7 +80,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html" class="active"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html" class="active"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -142,28 +142,53 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
-<h2 id="水-design-水"><a class="header" href="#水-design-水"><div align="center">水 Design 水</div></a></h2>
+<h2 id="水-tl--dr-水"><a class="header" href="#水-tl--dr-水"><div align="center">水 Tl ; dr 水</div></a></h2>
+<p>Here we provide non-technical high-level explanation of our system.</p>
+<ol>
+<li>
+<p>Users can register and deploy public key (or even multisig), which they can then rotate at will by submitting the re-register transaction on-chain.</p>
+</li>
+<li>
+<p>If user doesn't want to use hot private keys for voting at all, they can use an alternative system, which enforces the vote by submitting a commitment from the main account on-chain.</p>
 <ul>
-<li>
-<p><a href="./chapter_2_1.html">Main idea</a></p>
-</li>
-<li>
-<p><a href="./chapter_2_2.html">Additional tecnhiques</a></p>
-</li>
-<li>
-<p><a href="./chapter_2_3.html">Tl ; dr</a></p>
-</li>
+<li>If there is a significant improvement in ecdsa-circom, the hardware wallets can be integrated directly, however, currently we believe this is infeasible for most users.</li>
 </ul>
+</li>
+<li>
+<p>Otherwise, individual proposals do not require registration for voting.</p>
+</li>
+<li>
+<p>Each proposal has a permissionless set of tallying authorities. To register as an authority, user must deposit a collateral. These authorities have n-of-n secrecy threshold to collectively read the voting power of individual votes (i.e., if they all collude, it is possible to de-anonymize votes of whale accounts). Therefore, we believe it will be rational for whale accounts interested in their privacy to register as the tallying authorities.</p>
+</li>
+<li>
+<p>Due to having n-of-n secrecy threshold, it also has 1-of-n liveness threshold. In case any of the authorities fails to follow the protocol, they are slashed (and the collateral is used to compensate gas expenses). The voting then goes into the fallback mode.</p>
+</li>
+<li>
+<p>Normal voting mode uses account-hiding mechanic similar to Tornado Cash, and El Gamal homomorphic encryption to encrypt votes (similar to Open Vote Network).</p>
+</li>
+<li>
+<p>Fallback voting uses account-hiding mechanic, and allows user to vote <code>s</code> times if they have <code>s</code> voting power. Big accounts in this regime will need to send votes separately and ensure they can not be correlated using timing / ip sniffing.</p>
+</li>
+<li>
+<p>All zero knowledge proofs can be submitted from any on-chain account. The community is advised to spin up a few relayer servers to pass these proofs in batches.</p>
+</li>
+<li>
+<p>The proofs are submitted to optimistic proof-checking pool to drastically reduce the cost of the system.</p>
+</li>
+<li>
+<p>Every voter's frontend has a .js script to check voting integrity and alert them in case of the submission of the incorrect proof.</p>
+</li>
+</ol>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="chapter_2_2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="chapter_2_1.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="chapter_3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -173,11 +198,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="chapter_2_2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="chapter_2_1.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="chapter_3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
