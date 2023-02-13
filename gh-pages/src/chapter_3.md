@@ -13,14 +13,14 @@ Now, we explain what is contained in this commitment. It is not enforced at this
 ``key`` is a hash of the following data: 
 ```
 {
-    k, n: felt, // satisfying 0 <= k <= n <= LIMIT; suggest LIMIT=7;
-    P[n] : pubkey // an array of n public keys in babyJubJub curve
-    root: felt // a proof field element working as a seed for nullifiers
+    threshold, total: Fp, // satisfying 1 <= threshold <= total <= LIMIT; suggest LIMIT=7;
+    pubkeys[total] : pubkey // an array of n public keys in babyJubJub curve
+    seed : Fp // a random nonce used to produce nullifiers
 }
 ```
 
-On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing ``k`` and ``n`` corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.
+On the registration phase, we suggest multisignature users to translate their operational logic to our proof system, by choosing ``threshold`` and ``total`` corresponding to parameters of their multisig, and providing temporary public keys of each multisig party.
 
-``force`` is either 0 or a root of a Merkle tree that contains in (some) leaves the enforced vote values in a form ``H(voting_id, vote_value)``. It basically just contains compressed commands that must be fulfilled by voting from this account.
+``force`` is a root of a sparse Merkle tree which implements the key->value array, containing the enforced values (i.e., it has default value ``-1``, and it having value either ``0, 1, 2`` at leaf ``i`` means that in the proposal ``i`` this account will be able to vote only with corresponding value). It basically just contains compressed commands that must be fulfilled by voting from this account.
 
 This finishes the registration phase - no checks are done at this stage at all.

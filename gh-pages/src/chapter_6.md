@@ -12,6 +12,6 @@ The changes to the proof are fairly minimal:
 
 1) Instead of exposing ``enc_vote``, it should expose ``vote_value`` itself.
 
-2) Nullifier is calculated as ``null = H(key.root, voting_id, s)`` where ``0 <= s < nouns``. This ensures that the holder of ``nouns`` voting power can vote exactly ``nouns`` times.
+2) Nullifier is calculated as ``null = H(key.seed, voting_id, s)`` where ``0 <= s < nouns``. This ensures that the holder of ``nouns`` voting power can vote exactly ``nouns`` times.
 
 Otherwise, the scheme is completely analogous.
