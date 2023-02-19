@@ -18,3 +18,7 @@ Multiple proofs can be deposited in the same transaction, to also save on 27k ga
 The only subtle issue to be tackled is the size of collateral. We would like to make it fully automatic and ungoverned from the start, but it is impossible to fully predict the upcoming gas prices. While the condition of gas prices suddenly spiking and then staying consistently high for few days is unusual, this must be settled in some way. We have different ideas on this topic, the simplest one would be requiring at least 3x collateral based on observed avg gas price on last few deposits, and supporting a small (limited from above) automatic treasury that covers the gas cost in case of collateral deficit.
 
 In the unlikely scenario when even this doesn't work (for example, treasury got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.
+
+---
+
+*Addendum (19.02.2023):* There is an additional benefit of separating this mechanism into the public smart contract. While we initially aim towards the optimistic pool (as it is readily available and easiest to execute), there are also other kinds of proving pools possible based on recursive proving techniques, and hopefully in a not too far off future they will become available. Efficiency of such a pool benefits greatly from additional throughput, and therefore it is reasonable to have only one such contract for the whole Ethereum and its zk-applications.
