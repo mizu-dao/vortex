@@ -33,6 +33,7 @@
 
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
@@ -272,6 +273,18 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <p>This, however, requires a lot of gas. We are considering low-round games as possible replacement, to reduce collateral requirement on the proposer.</p>
 <p>Generally, this is not too big of an issue, because this game can be played in parallel with normal voting flow (and any user that is executing a proof against an incorrect Merkle root is fraudulent anyway).</p>
 <p>We reserve this part for further research.</p>
+<p><em>Addendum (19.02.2023):</em> there is an approach which reduces Merkle tree construction to the validation of the proving pool, described in the next chapter. This works roughly as follows:</p>
+<ol>
+<li>
+<p>Each nouns tx or redelegation is logged into the block chain of operations in a following way: <code>head[n] = keccak(head[n-1], operation)</code>. This will incur additional ~3000 gas cost per tx.</p>
+</li>
+<li>
+<p>In order to validate the new Merkle tree root, proposer needs to produce a proof with public inputs <code>old_merkle_root</code>, <code>old_head</code>, <code>new_merkle_root</code>, <code>new_head</code>, attesting the transition to the new Merkle tree. The amount of constraints in such a proof depends on the amount of txs between the last validated checkpoint and new checkpoint; therefore in case there were more than ~15 txs, multiple proofs will need to be constructed instead.</p>
+</li>
+<li>
+<p>The cost of proof checking is relatively small thanks to the proving pool mechanism, described in the next chapter.</p>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-8"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-8"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-nounism-水"><a class="header" href="#水-nounism-水"><div align="center">水 Nounism 水</div></a></h2>
 <h2 id="sub-proposal"><a class="header" href="#sub-proposal"><div align="center"> Sub-proposal! </div></a></h2>
@@ -283,6 +296,8 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
 <hr />
 <p>The only subtle issue to be tackled is the size of collateral. We would like to make it fully automatic and ungoverned from the start, but it is impossible to fully predict the upcoming gas prices. While the condition of gas prices suddenly spiking and then staying consistently high for few days is unusual, this must be settled in some way. We have different ideas on this topic, the simplest one would be requiring at least 3x collateral based on observed avg gas price on last few deposits, and supporting a small (limited from above) automatic treasury that covers the gas cost in case of collateral deficit.</p>
 <p>In the unlikely scenario when even this doesn't work (for example, treasury got depleted by an attacker using the same mechanic) it is still possible to slash them. Both Nouns Vortex and other possible applications have more than enough incentives to do it.</p>
+<hr />
+<p><em>Addendum (19.02.2023):</em> There is an additional benefit of separating this mechanism into the public smart contract. While we initially aim towards the optimistic pool (as it is readily available and easiest to execute), there are also other kinds of proving pools possible based on recursive proving techniques, and hopefully in a not too far off future they will become available. Efficiency of such a pool benefits greatly from additional throughput, and therefore it is reasonable to have only one such contract for the whole Ethereum and its zk-applications.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-9"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-9"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
 <h2 id="水-homomorphic-voting-scheme-水"><a class="header" href="#水-homomorphic-voting-scheme-水"><div align="center">水 Homomorphic voting scheme 水</div></a></h2>
 <p>We assume that we have achieved the following state:</p>
@@ -394,5 +409,6 @@ Challenger: calculate Merkle tree root on-chain, if it is different - slash the 
         });
         </script>
 
+    </div>
     </body>
 </html>
