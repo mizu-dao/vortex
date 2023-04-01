@@ -1,6 +1,5 @@
-<h1 align="center">Vortex</h1>
-<h4 align="center">New Gen Anonymous Voting</h4>
+# <div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div>
 <br>
 <p align="center">
-    <img src="https://github.com/mizu-dao/vortex/workflows/foundry-test/badge.svg" width="140">
+    <img src="https://github.com/mizu-dao/vortex/workflows/foundry-test/badge.svg" width="150">
 </p>

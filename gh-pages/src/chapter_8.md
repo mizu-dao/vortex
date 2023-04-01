@@ -4,10 +4,11 @@
 
 <br>
 
-* [X] Initialize repo for the implementations
-* [ ] Design 
+* [X] Win the [Private Voting Research Sprint](https://prop.house/nouns/private-voting-research-sprint) by Nouns DAO;
+* [X] Initialize repo for the implementations;
+* [ ] Design: 
     * [ ] Merkle tree
     * [ ] Collateral amount
-* [ ] Circuit implementation
-* [ ] Smart-contract implementation
-* [ ] Client app implementation
+* [ ] Circuit implementation;
+* [ ] Smart-contract implementation;
+* [ ] Client app implementation.
