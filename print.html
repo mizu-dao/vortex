@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li><li class="chapter-item expanded "><a href="chapter_8.html"><strong aria-hidden="true">8.</strong> Roadmap</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Nouns Vortex</a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">2.</strong> Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_2_1.html"><strong aria-hidden="true">2.1.</strong> Main idea</a></li><li class="chapter-item expanded "><a href="chapter_2_2.html"><strong aria-hidden="true">2.2.</strong> Additional techniques</a></li><li class="chapter-item expanded "><a href="chapter_2_3.html"><strong aria-hidden="true">2.3.</strong> Tl ; dr</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Registration</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">4.</strong> Optimistic validation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter_4_1.html"><strong aria-hidden="true">4.1.</strong> Merkle tree update</a></li><li class="chapter-item expanded "><a href="chapter_4_2.html"><strong aria-hidden="true">4.2.</strong> Nounism</a></li></ol></li><li class="chapter-item expanded "><a href="chapter_5.html"><strong aria-hidden="true">5.</strong> Main scheme</a></li><li class="chapter-item expanded "><a href="chapter_6.html"><strong aria-hidden="true">6.</strong> Fallback scheme</a></li><li class="chapter-item expanded "><a href="chapter_7.html"><strong aria-hidden="true">7.</strong> Foreword</a></li><li class="chapter-item expanded "><a href="chapter_8.html"><strong aria-hidden="true">8.</strong> Roadmap</a></li><li class="chapter-item expanded "><a href="chapter_9.html"><strong aria-hidden="true">9.</strong> Optimistic pool design</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -393,6 +393,100 @@ Smart-contract implementation;</li>
 <li><input disabled="" type="checkbox"/>
 Client app implementation.</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-13"><a class="header" href="#nouns-vortex-a-privacy-preserving-voting-for-nouns-dao-13"><div align="center">Nouns Vortex: <br/>A privacy preserving voting for Nouns DAO</div></a></h1>
+<h2 id="水-optimistic-pool-水"><a class="header" href="#水-optimistic-pool-水"><div align="center">水 Optimistic pool 水</div></a></h2>
+<p>Here, we outline our design of Optimistic Pool. It is an independent contract, serving as a co-processor to optimistically check large amount of independent operations. It could be treated as an optimistic rollup with extremely parallelized execution.</p>
+<h2 id="high-level-overview"><a class="header" href="#high-level-overview">High-level overview</a></h2>
+<p>Optimistic Pool holds a sequence of statements, called claims. Claims have types. Adding a new type is permissionless - typically, claim type is a particular kind of statement which needs to be checked - for example, a verifier for a certain zk-proof could be a claim type, (or maybe some other function which costs a lot of gas to verify directly).</p>
+<p>In essence, claim type is just an external contract which is assumed to have a specific form. If it doesn't, validating it might be undesirable, so there is a way to opt out from validation of a specific claim type.</p>
+<p>Claims periodically form batches - a sequence of claims which is then processed by the optimistic pool. When the batch is finalized, the special parties called blessers can declare which claims they deem correct (blessed), incorrect (cursed) or refuse to process. To do it in an orderly fashion, blessers form a queue.</p>
+<p>To get into a queue, blesser needs to deposit a bond in ETH. Blessers can be challenged, and their stake will be taken if they:</p>
+<ul>
+<li>
+<p>Bless some statement such that an actual ground truth checker for this claim type returns &quot;false&quot;.</p>
+</li>
+<li>
+<p>Curse some statement such that ground truth checker returns &quot;true&quot;.</p>
+</li>
+<li>
+<p>Process any statement and not process other statement <em>of the same type</em> in the same batch (censorship prevention).</p>
+</li>
+</ul>
+<p>Blessers collect small tips from the claimers.</p>
+<p>After the end of the challenge period, it is possible to query a particular claim and check whether it got blessed. </p>
+<h2 id="api-wip"><a class="header" href="#api-wip">API (wip)</a></h2>
+<p>This is an overview of the desired API. The actual implementation is not fully settled yet, there are some micro-optimizations possible.</p>
+<hr />
+<p><code>ClaimKind</code> - an address of some external contract; there is an append-only, permissionless array of existing claim types, <code>claimKindArray</code>.</p>
+<p><code>Claim</code> - a struct <code>(uint32 claimKindId, uint224 claimValue)</code>.</p>
+<p>The ClaimKind contract is assumed to have some specific interface, in particular, it must have function which packs some data, obtains <code>uint224</code> value and calls <code>deposit_claim(uint32 _claimKindId, uint224 _claimValue)</code> payable function of the Optimistic Pool contract.</p>
+<p><code>deposit_claim</code> does obvious checks (like <code>msg.sender == claimKindArray[_claimKindId]</code>, and tip being enough), and adds the claim into the <code>claimQueue</code>, which will be described further.</p>
+<p>Typically, data should be packed using keccak hash from calldata, however, we have left the space for other implementations, considering the upcoming EIP4844 and other possible data availability solutions.</p>
+<p><code>check_claim(uint224 _claimValue, bytes[] _advice) returns bool</code> - the function that checks whether the claim is correct or not. MUST return 0 if it is incorrect, 1 if it is correct, and revert in all other cases. It is not recommended to validate ClaimKind-s with checker functions not satisfying this requirement, as well as functions in which the result may change with time, or depend on sender address or other execution context.</p>
+<hr />
+<p><code>ClaimBatch</code> - batched sequence of <code>Claim</code>'s. Implementation details might vary, but likely it is some sort of append-only array. ClaimBatches occur every few hours, and <code>deposit_claim</code> only adds claims to the current batch.</p>
+<p><code>claimQueue</code> is a sequence of <code>ClaimBatch</code>-es. (in practice, it doesn't need to be an actual infinite queue, and will likely cycle once in a ~ month to save on the gas costs).</p>
+<p><code>Blessing</code> - tightly packed sequence of 0, 1 and 2 - s + some auxiliary information.</p>
+<ul>
+<li>0-s mean &quot;Claim incorrect&quot;</li>
+<li>1-s mean &quot;Claim correct&quot;</li>
+<li>2-s mean &quot;Refuse to assess&quot;</li>
+</ul>
+<p>Auxiliary information is the <code>claimedAmount</code> of 0's and 1's in a blessing, and blesser address. <em>We are so lazy we do not even want to compute this, so instead it will be checked optimistically</em>.</p>
+<hr />
+<p>Each <code>ClaimBatch</code> goes through the following process:</p>
+<p>Formation --&gt; Blessing period -&gt; Challenge period --&gt; Finalized</p>
+<p>New claims can be added only during the formation period. In the blessing period, new blessings can occur. In both blessing and challenge period the blessings can be challenged, but in challenge period new blessings can not occur.</p>
+<p>In the finalized state, external contracts can query and check whether the claim is blessed, cursed, or not processed. <em>we have also considered adding some automatic call-back system, but we feel it can be added independently and is not actually required by the core functionality of the contract.</em></p>
+<hr />
+<p>Blessings for a particular <code>ClaimBatch</code> are kept in the append-only array, together with <code>address blesser</code> and <code>bool isInvalidated</code> value.</p>
+<p>Any blessing can be challenged using the following API:</p>
+<p><code>challenge_blessing(uint _batch_id, uint _blessing_id, bytes[] _challenge)</code> which is a function that</p>
+<ul>
+<li>Checks that this blessing is <code>!isInvalidated</code>.</li>
+<li>Parses <code>_challenge</code> and depending on these either:</li>
+<li>
+<ul>
+<li>Checks that <code>claimedAmount</code> is incorrect.</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>Checks that there are two elements satisfying censorship requirement (i.e. there are 2 claims of the same ClaimKind one of which is processed, and other is ignored).</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>Calls <code>check_claim</code> on the contested claim and checks that the answer differs from claimed by the blesser.</li>
+</ul>
+</li>
+<li>In any of those cases, it sets <code>isInvalidated = true</code>, and slashes the blesser.</li>
+</ul>
+<hr />
+<p>Blessers form a blesser queue. In order to participate in a queue, one must call <code>blesser_get_into_queue()</code>, which is a payable function, pledging the <code>CURRENT_BOND_VALUE</code> of eth.</p>
+<p>Function <code>bless(uint _batchId, Blessing _blessing)</code> only works in the blessing period of the batch <code>_batchId</code>. Moreover, for the first half of the blessing period the available blessers are only blessers from the queue - with a running requirement <code>blesserOffset * CUTOFF_SPEED &lt; block.timestamp - batchBlessingInitTimestamp</code>. In the end of the first half there should be ~10 blessers available. In the second half, anyone is allowed to bless.</p>
+<p>Any blesser that is not the first one in the queue must still pledge the bond independently, and is not ejected from the queue (and by all means functions as a normal independent blesser).</p>
+<hr />
+<p>In order to withdraw tips, blessers also use optimistic computations - with the exception of the main blesser (the one in the head of the queue), which can just take <code>claimedAmount</code> and leave.</p>
+<p>Other blessers only get tips for things that they have blessed and previous ones did not. Therefore, in order to do it, they must submit a statement of a particular <code>ClaimKind</code>, which consists of a withdrawal statement - sequence of 0s and 1s, with 1 meaning that the corresponding claim was blessed or cursed, and was not blessed or cursed by anyone before them, and <code>amount</code> being the amount of <code>1</code>s. This statement is then processed normally using the aforementioned mechanism.</p>
+<hr />
+<p>The system has few constants and few moving variables. Constants are <code>BLESSING_PERIOD</code> and <code>CHALLENGE_PERIOD</code> - these need to be chosen based on censorship-resistance properties of Ethereum, and the time required to socially coordinate challenge in case of known watchers being DOSed. We believe few hours are likely enough, and conservatively put <code>CHALLENGE_PERIOD = 6 hours</code> and <code>BLESSING_PERIOD = 2 hours</code>.</p>
+<p>Arguably, in a more mature system this could be much lower, though varying gas costs are also a concern. <em>compared to 7 day finality of classic multi-round optimistic rollup we believe this performance is still okay-ish for most applications; we are open to hear analysis of this problem from different PoVs</em></p>
+<p>The <code>BATCH_FORMATION_PERIOD</code> should optimally be quite big (up to 8 hours) to ensure there are enough statements to efficiently process. It can be lowered when batches become bigger, because the gas savings stop at <code>log_3(2**256)</code>-sized batches (the maximal size such that ternary blessing word fits into <code>uint256</code>).</p>
+<hr />
+<p>Two main moving variables are <code>CURRENT_BOND_VALUE</code> and <code>CURRENT_BASE_TIP_VALUE</code>. Each ClaimKind should also declare multiplier, which represents the amount of gas spent on checking the claim. Base tip value is then modified by this multiplier.</p>
+<p>This part is largely &quot;here be dragons&quot;, still, but we describe some way of adjusting them automatically.</p>
+<ol>
+<li>
+<p>Tip value grows if blesser queue is too short (say, less than 10) and lowers if blesser queue is too long (say, more than 100).</p>
+</li>
+<li>
+<p>Collateral can not be smaller than some base value (say, ~1 ETH), and increases and decreases based on avg block base gas cost. This requires some sort of gas logging mechanism, but generally it doesn't need to be very precise. Generally, the potential to go into the failure mode only occurs if the gas spikes in such a way that cost of the singular challenge becomes &gt; than collateral. This puts some upper limit on <code>CLAIM_KIND_MULTIPLIER[_claimKindId]</code>, likely unachieveable due to block gas limit. Generally, targeting something like the cost of 300M gas (according to <code>block.basefee</code> averaged along few previous batches) should be a reasonably effective strategy. This value becomes bigger than 1 ETH at ~300 gwei sustained gas cost. The failure mode here would be gas spiking at least 30x times (for ClaimKind taking 10M gas to check) in an instant and staying there forever.</p>
+</li>
+<li>
+<p>Even in the case of such failure mode, the bad challenges can be slashed at loss. One can consider dao-ish or even automatic treasury targeting some larger value, which can be automatically used in such a failure mode to compensate for slashing expenses. In such case, bottom for collateral and hence fee can be even lower than 1 ETH.</p>
+</li>
+</ol>
 
                     </main>
 
