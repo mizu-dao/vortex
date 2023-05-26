@@ -1,4 +1,5 @@
 book
 circuits/*
 !circuits/*.circom
-circuits/lib/*
+!circuits/lib
+!circuits/lib/*
