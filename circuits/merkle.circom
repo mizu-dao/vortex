@@ -1,7 +1,6 @@
 pragma circom 2.1.5;
 
 include "./lib/poseidon.circom";
-include "./lib/bitify.circom";
 include "./lib/mux1.circom";
 
 template MerkleTree(D) {
