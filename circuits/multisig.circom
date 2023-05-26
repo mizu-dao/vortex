@@ -6,12 +6,14 @@ include "./lib/poseidon.circom";
 include "./lib/binsum.circom";
 
 /// checks that at least T of N signatures are valid
-template MultiSig(N, T){
+template MultiSig(N){
     signal input pubkeys_hash;
     signal input m;
     signal input s[N];
     signal input R[N][2];
     signal input P[N][2];
+    signal input threshold;
+
 
     component pubkeys_hasher = Poseidon(N);
     for (var i = 0; i < N; i++){
@@ -37,8 +39,11 @@ template MultiSig(N, T){
     }
 
     var logN = nbits(N)+1;
-    signal ans <== GreaterEqThan(logN)([acc, T]);
-    ans === 1;
+    
+    signal result <== GreaterEqThan(logN)([acc, threshold]); // threshold variable is trusted anyways
+    
+    result === 1;
+
 }
 
-component main {public [pubkeys_hash, m]} = MultiSig(7, 4);
+component main {public [pubkeys_hash, m]} = MultiSig(7);

@@ -37,6 +37,3 @@ template MerkleTree(DEPTH) {
     leaf <== path[DEPTH];
 
 }
-
-
-component main {public[root]} = MerkleTree(20);
