@@ -64,7 +64,7 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
 
     signal id <== noun_id * (2**20) + prop_id;
 
-    signal output nullifier <== Poseidon(2)([id, secret]);
+    signal output nullifier <== Poseidon(2)([secret, id]);
 }
 
 
