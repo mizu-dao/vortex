@@ -2,24 +2,27 @@ pragma circom 2.1.5;
 
 include "./multisig.circom";
 include "./merkle.circom";
+include "./encrypt_vote.circom";
 include "./registration_utils.circom";
 include "./lib/comparators.circom";
 include "./lib/bitify.circom";
 
 
 
-template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMOUNT){
+
+template VoteEncrypted(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMOUNT){
 
     //public inputs
     
     signal input merkle_root; // this will be a public input, supplied by the user; it is not constrained by a contract
                               // - but votes to different Merkle roots go into different buckets
     signal input prop_id;   // id of the proposal
-    signal input vote; // 0 or 1
+    signal input encrypted_vote_C[2]; // encrypted vote
+    signal input encrypted_vote_K[2]; // encrypted vote
+    signal input P[2]; // public key of decryption authority committee, ASSUMED TO BE A VALID POINT
 
     //private inputs
     
-    signal input noun_id; // noun_id is a value from 0 to amount of Nouns on user account; in a fallback scheme they vote separately
     signal input secret;
 
     signal input voter_path_wtns[VOTER_TREE_DEPTH][2]; // Merkle path to the container
@@ -42,6 +45,10 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
 
     is_restricted_by_prop*is_restricted_by_prop === is_restricted_by_prop;
 
+    signal input k;
+    signal input vote;
+
+    IsValidVoteEncryption()(P <== P, C <== encrypted_vote_C, K <== encrypted_vote_K, k <== k, vote <== vote, vote_power <== vote_power);
 
     component multisig = Multisig(PUBKEYS_MAX_AMOUNT);
     multisig.m <== vote + 2*prop_id;
@@ -66,17 +73,11 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
 
     parse_container.container === container;
 
-    vote*vote === vote;
-    _ <== Num2Bits(20)(noun_id); //constrain noun_id to be smol
-    component lt = LessThan(20);
-    lt.in <== [noun_id, vote_power];
-    lt.out === 1; // ensure that noun_id < vote_power; vote_power is assumed to be already smol
-
-    signal id <== prop_id * (2**20) + noun_id;
+    signal id <== prop_id * (2**20) - 1; // subtracting 1 to prevent collision with fallback scheme
 
     signal output nullifier <== Poseidon(2)([secret, id]);
 }
 
 
 
-component main {public[merkle_root, prop_id, vote]} = VoteFallback(20, 4, 7);
+component main {public[merkle_root, prop_id, encrypted_vote_C, encrypted_vote_K, P]} = VoteEncrypted(20, 4, 7);
