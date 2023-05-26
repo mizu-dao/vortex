@@ -3,3 +3,4 @@ circuits/*
 !circuits/*.circom
 !circuits/lib
 !circuits/lib/*
+node_modules
