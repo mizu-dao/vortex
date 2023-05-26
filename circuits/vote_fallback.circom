@@ -35,6 +35,9 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
     signal input sigs_s[PUBKEYS_MAX_AMOUNT];
     signal input threshold;
 
+    signal input is_restricted_by_prop; // bool value indicating whether prop_id should be given or default value -1
+    is_restricted_by_prop*is_restricted_by_prop === is_restricted_by_prop;
+
     component multisig = Multisig(PUBKEYS_MAX_AMOUNT);
     multisig.m <== vote + 3*prop_id;
     multisig.s <== sigs_s;
@@ -50,7 +53,7 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
     parse_container.registration_data_root <== registration_data_root;
     parse_container.path_wtns <== reg_path_wtns;
     parse_container.selectors <== reg_selectors;
-    parse_container.prop_id <== prop_id;
+    parse_container.prop_id <== (prop_id+1)*is_restricted_by_prop - 1;
     parse_container.threshold <== threshold;
     parse_container.pubkeys_hash <== multisig.pubkeys_hash;
     parse_container.secret <== secret;
