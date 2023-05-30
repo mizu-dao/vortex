@@ -1,6 +1,5 @@
 { 
     "devDependencies": {
-        "snarkjs": "^0.7.0",
         "circomlib": "^2.0.5"
     }
 }

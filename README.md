@@ -3,3 +3,10 @@
 <p align="center">
     <img src="https://github.com/mizu-dao/vortex/workflows/foundry-test/badge.svg" width="150">
 </p>
+
+---
+
+Install dependencies: 
+```bash
+npm install
+```
