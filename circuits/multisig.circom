@@ -1,9 +1,9 @@
 pragma circom 2.1.5;
 
 include "./signature.circom";
-include "./lib/comparators.circom";
-include "./lib/poseidon.circom";
-include "./lib/binsum.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/binsum.circom";
 
 /// checks that at least T of N signatures are valid
 template Multisig(N){

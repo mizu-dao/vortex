@@ -3,8 +3,8 @@ pragma circom 2.1.5;
 include "./multisig.circom";
 include "./merkle.circom";
 include "./registration_utils.circom";
-include "./lib/comparators.circom";
-include "./lib/bitify.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 
 

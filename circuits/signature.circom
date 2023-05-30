@@ -1,12 +1,12 @@
 pragma circom 2.1.5;
 
-include "./lib/babyjub.circom";
-include "./lib/poseidon.circom";
-include "./lib/escalarmulany.circom";
-include "./lib/bitify.circom";
-include "./lib/comparators.circom";
+include "../node_modules/circomlib/circuits/babyjub.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/escalarmulany.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
-/// checks validity of Schnorr Signature; does not check that P or R live in a subgroup.
+// Checks validity of Schnorr Signature; does not check that P or R live in a subgroup.
 template SchnorrSignature() {
     
     // Schnorr signature is a pair (s, R) satisfying sG = R + Pubkey * Hash(R, Pubkey, m)

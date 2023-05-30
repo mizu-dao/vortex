@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
-include "./lib/poseidon.circom";
-include "./lib/mux1.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/mux1.circom";
 
 template MerkleTree(DEPTH) {
     signal input root;

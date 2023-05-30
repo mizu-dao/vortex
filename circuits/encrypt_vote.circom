@@ -1,10 +1,10 @@
 pragma circom 2.1.5;
 
-include "./lib/babyjub.circom";
-include "./lib/poseidon.circom";
-include "./lib/escalarmulany.circom";
-include "./lib/bitify.circom";
-include "./lib/comparators.circom";
+include "../node_modules/circomlib/circuits/babyjub.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/escalarmulany.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
 /// homomorphic ElGamal: we encrypt YES / NO; "abstain" votes are not supported, this can be added if needed
 /// the cyphertext is a pair (C = kP + vG, K = kG), where v is a vote value; v = vote_power*vote.
