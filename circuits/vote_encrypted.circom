@@ -7,9 +7,6 @@ include "./registration_utils.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
-
-
-
 template VoteEncrypted(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMOUNT){
 
     //public inputs

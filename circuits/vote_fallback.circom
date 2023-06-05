@@ -6,23 +6,19 @@ include "./registration_utils.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
-
-
 template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMOUNT){
 
-    //public inputs
-    
+    // Public inputs
     signal input merkle_root; // this will be a public input, supplied by the user; it is not constrained by a contract
                               // - but votes to different Merkle roots go into different buckets
     signal input prop_id;   // id of the proposal
     signal input vote; // 0 or 1
 
-    //private inputs
-    
+    // private inputs
     signal input noun_id; // noun_id is a value from 0 to amount of Nouns on user account; in a fallback scheme they vote separately
     signal input secret;
 
-    signal input voter_path_wtns[VOTER_TREE_DEPTH][2]; // Merkle path to the container
+    signal input voter_path_wtns[VOTER_TREE_DEPTH]; // Merkle path to the container
     signal input voter_selectors[VOTER_TREE_DEPTH];
 
     signal input registration_data_root;
@@ -40,11 +36,11 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
     // if is_restricted_by_prop == 0, then container.prop_id == -1, container.vote == 0
     // if is_restricted_by_prop == 1, then container.prop_id == prop_id, container.vote == vote
 
-    is_restricted_by_prop*is_restricted_by_prop === is_restricted_by_prop;
+    is_restricted_by_prop * is_restricted_by_prop === is_restricted_by_prop;
 
 
     component multisig = Multisig(PUBKEYS_MAX_AMOUNT);
-    multisig.m <== vote + 2*prop_id;
+    multisig.m <== vote + 2 * prop_id;
     multisig.s <== sigs_s;
     multisig.R <== sigs_R;
     multisig.P <== pubkeys;
@@ -66,7 +62,7 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
 
     parse_container.container === container;
 
-    vote*vote === vote;
+    vote * vote === vote;
     _ <== Num2Bits(20)(noun_id); //constrain noun_id to be smol
     component lt = LessThan(20);
     lt.in <== [noun_id, vote_power];
@@ -77,6 +73,4 @@ template VoteFallback(VOTER_TREE_DEPTH, REGISTRATION_TREE_DEPTH, PUBKEYS_MAX_AMO
     signal output nullifier <== Poseidon(2)([secret, id]);
 }
 
-
-
-component main {public[merkle_root, prop_id, vote]} = VoteFallback(20, 4, 7);
+component main { public [merkle_root, prop_id, vote] } = VoteFallback(20, 4, 7);
