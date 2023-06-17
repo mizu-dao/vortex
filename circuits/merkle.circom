@@ -5,8 +5,8 @@ include "../node_modules/circomlib/circuits/mux1.circom";
 
 template MerkleTree(DEPTH) {
     signal input leaf;
-    signal input pathIndex[DEPTH];
     signal input pathElements[DEPTH];
+    signal input pathSelectors[DEPTH];
 
     signal output root;
 
@@ -15,14 +15,14 @@ template MerkleTree(DEPTH) {
     
     levelHashes[0] <== leaf;
     for (var i = 0; i < DEPTH; i++) {
-        pathIndex[i] * (pathIndex[i] - 1) === 0;
+        pathSelectors[i] * (pathSelectors[i] - 1) === 0;
 
         mux[i] <== MultiMux1(2)(
             [
                 [levelHashes[i], pathElements[i]], 
                 [pathElements[i], levelHashes[i]]
             ], 
-            pathIndex[i]
+            pathSelectors[i]
         );
 
         levelHashes[i + 1] <== Poseidon(2)([mux[i][0], mux[i][1]]);

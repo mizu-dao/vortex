@@ -12,13 +12,13 @@ template Multisig(N){
     signal input R[N][2];
     signal input P[N][2];
     signal input threshold;
-    signal output pubkeys_hash;
+    signal output pubkeysHash;
 
-    component pubkeys_hasher = Poseidon(N);
+    component pubkeysHasher = Poseidon(N);
     for (var i = 0; i < N; i++) {
-        pubkeys_hasher.inputs[i] <== P[i][0];
+        pubkeysHasher.inputs[i] <== P[i][0];
     }
-    pubkeys_hash <== pubkeys_hasher.out;
+    pubkeysHash <== pubkeysHasher.out;
 
     component sigs[N];
     for (var i = 0; i < N; i++){
