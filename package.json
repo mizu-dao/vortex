@@ -1,5 +1,6 @@
 { 
     "devDependencies": {
-        "circomlib": "^2.0.5"
+        "circomlib": "^2.0.5",
+        "circomlibjs": "^0.1.7"
     }
 }
