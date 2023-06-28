@@ -4,3 +4,4 @@ circuits/*
 !circuits/lib
 !circuits/lib/*
 node_modules
+target
