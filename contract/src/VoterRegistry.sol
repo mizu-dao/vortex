@@ -24,7 +24,8 @@ struct Checkpoint{
 struct RegistrationData{
     bool is_nullified; // will be set to True on unregister
     uint24 collateral_value;
-    uint224 data;
+    uint32 registration_block;
+    uint256 data;
 }
 
 contract VoterRegistry{
@@ -90,16 +91,16 @@ contract VoterRegistry{
         return (1 gwei)*(2**18)*value; // value 2**12 corresponds to 1 eth
     }
 
-    function register(uint224 data, uint32 nonce) external payable {
+    function register(uint256 data, uint32 nonce) external payable {
         Nouns nouns = Nouns(NOUNS_TOKEN_ADDRESS);
         require(block.number < 2**32);
         require(nouns.getCurrentVotes(msg.sender) > 0); // can not register without having votes (either balance or delegated)
         uint192 addr_ext = uint192(uint160(msg.sender))<<32 + nonce;
         require(!isPopulated(addr_ext)); // can not register if already registered with the same nonce
-        require(msg.value == to_ether(CURRENT_COLLATERAL_VALUE));
+        require(msg.value == to_ether(CURRENT_COLLATERAL_VALUE)); // must pay exactly current collateral value
 
         // set registration data
-        RegistrationData memory reg_data = RegistrationData(false, CURRENT_COLLATERAL_VALUE, data);
+        RegistrationData memory reg_data = RegistrationData(false, CURRENT_COLLATERAL_VALUE, uint32(block.number), data);
         registrationData[addr_ext] = reg_data;
 
         // set checkpoint
@@ -163,9 +164,12 @@ contract VoterRegistry{
         _unregister_internal(addr_ext);
     }
 
-    function unregister_other(address guy, uint32 nonce) external { // involuntary unregistration
+    function unregister_other(address guy, uint32 nonce, uint256 offset) external { // involuntary unregistration
         uint192 addr_ext = uint192(uint160(guy))<<32 + nonce;
-        require(Nouns(NOUNS_TOKEN_ADDRESS).getPriorVotes(guy, block.number-GRACE_PERIOD) == 0); // a day ago a guy had 0 votes in total
+        require(offset > GRACE_PERIOD);
+        uint256 witness_block = block.number - offset;
+        require(registrationData[addr_ext].registration_block < witness_block); //guy had 0 votes after registration, not before
+        require(Nouns(NOUNS_TOKEN_ADDRESS).getPriorVotes(guy, witness_block) == 0); // a guy had 0 votes previously
         _unregister_internal(addr_ext);
     }
 }
