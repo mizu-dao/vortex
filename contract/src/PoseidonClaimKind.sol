@@ -93,7 +93,7 @@ contract PoseidonClaimKind {
             return arr[arr.length-1];
     }
     
-    // straightforwardly computing root might be larger than node RPC limits,
+    // straightforwardly computing root might be larger than node RPC gas limits,
     // so we split the execution using this helper function:
     function computeRoot(uint256[] calldata poseidon_subroots) external view returns(uint256, uint256[] memory){
         uint bits = log2(getLeavesAmount());

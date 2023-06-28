@@ -5,7 +5,7 @@ contract Nouns {
     uint256 private total_supply;
     
 
-    function monkTotalSupply(uint256 _total_supply) external {
+    function mockTotalSupply(uint256 _total_supply) external {
         total_supply = _total_supply;
     }
 
