@@ -25,12 +25,13 @@ struct RegistrationData{
     bool is_nullified; // will be set to True on unregister
     uint24 collateral_value;
     uint32 registration_block;
+    address unregister_authority; // delegate unregistration
     uint256 data;
 }
 
 contract VoterRegistry{
     
-    uint256 GRACE_PERIOD; // amount of blocks that a user has to unregister
+    uint256 GRACE_PERIOD; // amount of blocks that the user has to unregister after they have 0 voting power
 
     uint24 public CURRENT_COLLATERAL_VALUE;
     address public owner;
@@ -79,19 +80,38 @@ contract VoterRegistry{
         return (numAddrUpdates[addr]>0);
     }
 
-    function findNonce(address addr) external view returns (uint192){
-        uint192 res = uint192(uint160(addr))<<32;
-        while (isPopulated(res)){
-            res++;
+
+    // this assumes nonces are sequential, and we search next empty first by doubling,
+    // and then using binary search
+    // in case they are not, 1st ammendment protects user's right to bear footguns
+    function findNonce(address addr) public view returns (uint32){
+        uint192 addr_base = uint192(uint160(addr))<<32;
+        if (!isPopulated(addr_base)){return 0;}
+        uint32 r = 1;
+        while (isPopulated(addr_base+r)){r*=2;}
+        uint32 l = 0;
+        uint32 mid;
+        while(r-l > 1){
+            mid = (r+l)/2;
+            if (isPopulated(addr_base+mid)){
+                l=mid;
+            } else {r=mid;}
         }
-        return res;
+        return r;
     }
+
 
     function to_ether(uint24 value) public pure returns(uint256) {
         return (1 gwei)*(2**18)*value; // value 2**12 corresponds to 1 eth
     }
 
-    function register(uint256 data, uint32 nonce) external payable {
+    function register(uint256 data) external payable{
+        uint32 nonce = findNonce(msg.sender);
+        register_by_nonce(data, nonce, msg.sender);
+    }
+
+
+    function register_by_nonce(uint256 data, uint32 nonce, address unregister_authority) public payable {
         Nouns nouns = Nouns(NOUNS_TOKEN_ADDRESS);
         require(block.number < 2**32);
         require(nouns.getCurrentVotes(msg.sender) > 0); // can not register without having votes (either balance or delegated)
@@ -100,7 +120,7 @@ contract VoterRegistry{
         require(msg.value == to_ether(CURRENT_COLLATERAL_VALUE)); // must pay exactly current collateral value
 
         // set registration data
-        RegistrationData memory reg_data = RegistrationData(false, CURRENT_COLLATERAL_VALUE, uint32(block.number), data);
+        RegistrationData memory reg_data = RegistrationData(false, CURRENT_COLLATERAL_VALUE, uint32(block.number), unregister_authority, data);
         registrationData[addr_ext] = reg_data;
 
         // set checkpoint
@@ -161,6 +181,14 @@ contract VoterRegistry{
 
     function unregister_self(uint32 nonce) external { // voluntary unregistration
         uint192 addr_ext = uint192(uint160(msg.sender))<<32 + nonce;
+        _unregister_internal(addr_ext);
+    }
+
+    function unregister_delegated(uint192 addr_ext) external { // registration by delegated authority
+        require(msg.sender == registrationData[addr_ext].unregister_authority);
+        // the delegated authority contract should check the unregister conditions
+        // so I'm not implementing them here
+        // but normal delegated contract will check that at least getCurrentVotes is 0
         _unregister_internal(addr_ext);
     }
 
