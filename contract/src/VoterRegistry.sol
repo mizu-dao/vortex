@@ -10,8 +10,6 @@ interface Nouns {
 
 address constant NOUNS_TOKEN_ADDRESS = address(0x5FC8d32690cc91D4c39d9d3abcBD16989F875707);
 
-
-
 // if user decides to unregister and then register back, they will have to use a different nonce
 // 32 last bits are used for nonce - i.e. x>>32 is address, and x%(1<<32) is nonce
 // therefore, we keep extended addresses in 192-bit values
@@ -19,6 +17,11 @@ address constant NOUNS_TOKEN_ADDRESS = address(0x5FC8d32690cc91D4c39d9d3abcBD169
 struct Checkpoint{
     uint32 fromBlock;
     uint192 voter;
+}
+
+struct LengthCheckpoint{
+    uint32 fromBlock;
+    uint32 length;
 }
 
 struct RegistrationData{
@@ -36,7 +39,9 @@ contract VoterRegistry{
     uint24 public CURRENT_COLLATERAL_VALUE;
     address public owner;
 
-    uint32 public numVoters;                                
+    uint32 public numVoters;
+    uint32 public numUpdates;
+     //  160+32+32+24 = 248 < 256                              
     mapping(uint32 => mapping(uint32 => Checkpoint)) public votersById; 
     mapping(uint32 => uint32) public numIdCheckpoints;                
     // this is a voter registry by id, Merkle tree construction iterates over it
@@ -51,7 +56,7 @@ contract VoterRegistry{
     // +registration is typically done infrequently, so gas savings here are not that important
 
     mapping(uint192 => RegistrationData) public registrationData; //contains registration data of the user.
-
+    mapping(uint32 => LengthCheckpoint) public lengthData;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
@@ -83,7 +88,7 @@ contract VoterRegistry{
 
     // this assumes nonces are sequential, and we search next empty first by doubling,
     // and then using binary search
-    // in case they are not, 1st ammendment protects user's right to bear footguns
+    // in case they are not, 1st amendment protects user's right to bear footguns
     function findNonce(address addr) public view returns (uint32){
         uint192 addr_base = uint192(uint160(addr))<<32;
         if (!isPopulated(addr_base)){return 0;}
@@ -92,7 +97,7 @@ contract VoterRegistry{
         uint32 l = 0;
         uint32 mid;
         while(r-l > 1){
-            mid = (r+l)/2;
+            mid = r-(r-l)/2;
             if (isPopulated(addr_base+mid)){
                 l=mid;
             } else {r=mid;}
@@ -127,9 +132,15 @@ contract VoterRegistry{
         Checkpoint memory checkpoint = Checkpoint(uint32(block.number), addr_ext);
 
         uint32 _numVoters = numVoters;
+        uint32 _numUpdates = numUpdates;
+
         votersById[_numVoters][numIdCheckpoints[_numVoters]] = checkpoint;
         numIdCheckpoints[_numVoters]++;
+
+        lengthData[_numUpdates] = LengthCheckpoint(uint32(block.number), _numVoters+1);
+
         numVoters=_numVoters+1;
+        numUpdates=_numUpdates+1;
 
         // set 1st voter update
         votersByAddress[addr_ext][0] = _numVoters;
@@ -148,29 +159,39 @@ contract VoterRegistry{
         uint32 id = votersByAddress[addr_ext][_numAddrUpdates_eject]; //compute id of the cell we need to eject
 
         uint32 _numVoters = numVoters;
-        uint32 _numIdCheckpoints_last = numIdCheckpoints[_numVoters];
-        uint32 _numIdCheckpoints_eject = numIdCheckpoints[id];
-        uint192 last_addr = votersById[_numVoters][_numIdCheckpoints_last].voter;
-    
-        uint32 _numAddrUpdates_last = numAddrUpdates[last_addr];
-
-        // update voters by id: eject and swap method
+        uint32 _numUpdates = numUpdates;
         
-        // write an update in the cell we ejected
-        votersById[id][_numIdCheckpoints_eject] = Checkpoint(uint32(block.number), last_addr);
-        numIdCheckpoints[id] = _numIdCheckpoints_eject + 1;
-        //and decrease amount of voters by 1
-        numVoters = _numVoters-1;
+        // if id is _numVoters - 1, we will just decrease amount of voters by 1
+        // if it is smaller, we use eject and swap method
+        // which means that we push an update into the cell we are deleting data from
+        // and rewire pointer of the extended address last_addr to point to this cell
 
-        // update voters by address:
-        // this only updates the last_addr
+        if (_numVoters > id + 1) { 
+            uint32 _numIdCheckpoints_last = numIdCheckpoints[_numVoters];
+            uint32 _numIdCheckpoints_eject = numIdCheckpoints[id];
+            uint192 last_addr = votersById[_numVoters][_numIdCheckpoints_last].voter;
+        
+            uint32 _numAddrUpdates_last = numAddrUpdates[last_addr];
 
-        votersByAddress[last_addr][_numAddrUpdates_last] = id; // push the pointer to the new position of user address in the voter registry
-        numAddrUpdates[last_addr] = _numAddrUpdates_last + 1;
+            // update voters by id: eject and swap method
+
+            votersById[id][_numIdCheckpoints_eject] = Checkpoint(uint32(block.number), last_addr);
+            numIdCheckpoints[id] = _numIdCheckpoints_eject + 1;
+            
+            // update voters by address:
+            // this only updates the last_addr
+
+            votersByAddress[last_addr][_numAddrUpdates_last] = id; // push the pointer to the new position of user address in the voter registry
+            numAddrUpdates[last_addr] = _numAddrUpdates_last + 1;
+            }
 
         // nullify registration data
         registrationData[addr_ext].is_nullified = true;
-    
+        // decrease amount of voters by 1
+        numVoters = _numVoters-1;
+        numUpdates = _numUpdates+1;
+        lengthData[_numUpdates] = LengthCheckpoint(uint32(block.number),_numVoters-1);
+
         // transfer collateral to message sender
         // this value is fixed at the moment of registration
         // for example - if owner changes CURRENT_COLLATERAL_VALUE, it shall not break any invariants
@@ -199,5 +220,48 @@ contract VoterRegistry{
         require(registrationData[addr_ext].registration_block < witness_block); //guy had 0 votes after registration, not before
         require(Nouns(NOUNS_TOKEN_ADDRESS).getPriorVotes(guy, witness_block) == 0); // a guy had 0 votes previously
         _unregister_internal(addr_ext);
+    }
+
+    function getPriorLen(uint256 blockNumber) external view returns ( uint32 ) { // this will return power of 2 >= length at blockNumber
+        require (blockNumber < block.number);
+        uint32 _numUpdates = numUpdates;
+        if (_numUpdates == 0) { return 0; }
+        LengthCheckpoint memory tmp;
+        tmp = lengthData[_numUpdates];
+        if (tmp.fromBlock < blockNumber) { return _numUpdates; }
+        uint32 l = 0;
+        uint32 r = _numUpdates-1;
+        uint32 mid;
+        while(r > l){
+            mid = r-(r-l)/2;
+            tmp = lengthData[mid];
+            if (tmp.fromBlock == block.number) { return mid;}
+            if (tmp.fromBlock < block.number) { l = mid; } else { r = mid - 1; }
+        }
+        return lengthData[l].length;
+    }
+
+    function getPriorCheckpointExtAddr(uint32 id, uint256 blockNumber) external view returns (uint192) {
+        uint32 checkpoint_id = getPriorCheckpointId(id, blockNumber);
+        return votersById[id][checkpoint_id].voter;
+    }
+
+    function getPriorCheckpointId(uint32 id, uint256 blockNumber) public view returns (uint32) {
+        require (blockNumber < block.number);
+        uint32 _nCheckpoints = numIdCheckpoints[id];
+        if (_nCheckpoints == 0) { return 0; }
+        Checkpoint memory tmp;
+        tmp = votersById[id][_nCheckpoints];
+        if (tmp.fromBlock < blockNumber) { return _nCheckpoints; }
+        uint32 l = 0;
+        uint32 r = _nCheckpoints-1;
+        uint32 mid;
+        while(r > l){
+            mid = r-(r-l)/2;
+            tmp = votersById[id][mid];
+            if (tmp.fromBlock == block.number) { return mid;}
+            if (tmp.fromBlock < block.number) { l = mid; } else { r = mid - 1; }
+        }
+        return l;
     }
 }
