@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 
-// this is a prototype proprietary Nouns DAO pool for voting
+// this is a prototype of a proprietary Nouns DAO pool for voting
 // should work by itself, but if we want to make a public good version,
 // we will need to integrate it into shared pools paradigm
 
@@ -11,6 +11,10 @@ contract ClaimPool {
     struct QueueEntry {
         address guy;
         uint32 fee;
+    }
+
+    struct ClaimBatch {
+
     }
 
 
@@ -87,5 +91,6 @@ contract ClaimPool {
     }
 
     // ---
+
 
 }
