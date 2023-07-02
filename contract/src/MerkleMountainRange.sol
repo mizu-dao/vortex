@@ -29,10 +29,16 @@ contract MerkleMountainRange {
             cap = caps[_caps_length];
             if (cap.cap_id == _update.cap_id){
                 _update = enumeratedCap(_update.cap_id + 1, uint248(uint256((keccak256(abi.encodePacked(cap.cap_hash, _update.cap_hash))))));
+                if (_caps_length == 0){
+                    caps[0] = _update;
+                    caps_length = 1;
+                    return;
+                }
                 _caps_length -= 1;
             } else {
                 caps[_caps_length] = _update;
                 caps_length = _caps_length + 2;
+                return;
             } 
             
         }
