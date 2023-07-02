@@ -56,9 +56,9 @@ contract MerkleMountainRange {
         for(uint256 i = 0; i < _caps_length ; i++) {
             
             enumeratedCap memory tmp = caps[uint8(i)];
-
-            if (id >= (1 << tmp.cap_depth)){
-                id -= (1<<tmp.cap_depth);
+            uint256 offset = 1 << tmp.cap_depth;
+            if (id >= offset){
+                id -= offset;
             } else {
                 require(length == tmp.cap_depth, "path has incorrect length");
                 l = leaf;
