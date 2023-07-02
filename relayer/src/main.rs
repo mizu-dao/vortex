@@ -2,7 +2,7 @@
     ~1. Научиться делать view транзакции~
     ~2. Научиться делать view транзакции с инфурой~
     ~3. Научиться подключать герли и делать view транзакции~
-    4. Научиться колл транзакции делать
+    ~4. Научиться колл транзакции делать~
     5. Сделать верификацию для двух голосований
     6. Научиться юзать Axum
     7. API
@@ -14,15 +14,17 @@ use clap::Parser;
 
 use electron_rs::verifier::near::*;
 
-use ethers::prelude::*;
+use ethers::{prelude::*, utils::parse_ether};
 
-const WETH_ADDRESS: &str = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+const WETH_ADDRESS: &str = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
     rpc: String,
+    #[arg(short, long)]
+    private_key: String,
 }
 
 abigen!(
@@ -43,21 +45,17 @@ abigen!(
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let rpc = args.rpc;
+    let private_key = args.private_key;
 
     let provider = Provider::<Http>::try_from(rpc)?;
 
-    let block_number = provider.get_block_number().await?;
+    let wallet: LocalWallet = private_key.parse()?;
+    let client = SignerMiddleware::new(provider, wallet.with_chain_id(5u64));
 
-    println!("{block_number}");
+    let address: Address = "0x0".parse()?;
 
-    // let address: Address = WETH_ADDRESS.parse()?;
-    // let client = Arc::new(provider);
-
-    // let contract = IERC20::new(address, client);
-
-    // let total_supply = contract.total_supply().call().await.unwrap();
-
-    // println!("{total_supply:?}");
+    let tx = TransactionRequest::pay(address, 100);
+    client.send_transaction(tx, None).await?;
 
     Ok(())
 }
