@@ -40,7 +40,7 @@ contract MerkleMountainRange {
                 }
                 _caps_length -= 1;
             } else {
-                caps[_caps_length] = _update;
+                caps[_caps_length+1] = _update;
                 caps_length = _caps_length + 2;
                 return;
             } 
