@@ -17,9 +17,15 @@ contract Router {
         uint128 tail;
     }
 
+    struct Batch {
+        mapping(uint256 => uint256) blessing;
+        uint256 numberOfClaims;
+    }
+
     struct Pool {
         mapping(address => bool) claimKinds;
         Queue queue;
+        mapping(uint256 => Batch) batches;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -32,7 +38,7 @@ contract Router {
     uint256 lastUpdateBlockNumber;
     uint256 public avgBaseFee;
 
-    function update() private {
+    function update() internal {
         if ((block.number - lastUpdateBlockNumber) < ORACLE_UPDATE_COOLDOWN) return;
         lastUpdateBlockNumber = block.number;
         avgBaseFee = (block.basefee + (ORACLE_UPDATE_INVERSE_WEIGHT - 1) * avgBaseFee) / ORACLE_UPDATE_INVERSE_WEIGHT;
@@ -46,6 +52,8 @@ contract Router {
     uint256 constant QUEUE_BOND = 1 ether;
     uint256 constant QUEUE_FEE_STEP = 2000;
     uint32 constant QUEUE_LENGTH = 100;
+
+    uint32 constant BATCH_FREQUENCY = 2400;
 
     /*//////////////////////////////////////////////////////////////
                         Contract storage & logic
@@ -87,7 +95,7 @@ contract Router {
         return (queue.tail + QUEUE_LENGTH - queue.head) % QUEUE_LENGTH;
     }
 
-    function queuePop(uint256 poolId) private Update returns (QueueEntry memory) {
+    function queuePop(uint256 poolId) internal Update returns (QueueEntry memory) {
         uint128 _head = pools[poolId].queue.head;
         uint128 _tail = pools[poolId].queue.tail;
         require(_head != _tail, "err, Router::queuePop: queue is empty");
@@ -97,7 +105,7 @@ contract Router {
         return pools[poolId].queue.entries[_head];
     }
 
-    function queuePush(uint256 poolId, QueueEntry memory entry) private Update {
+    function queuePush(uint256 poolId, QueueEntry memory entry) internal Update {
         uint128 _head = pools[poolId].queue.head;
         uint128 _tail = pools[poolId].queue.tail;
         require((_tail + 1 + QUEUE_LENGTH - _head) % QUEUE_LENGTH != 0, "err, Router::queuePush: queue is full");
@@ -106,7 +114,7 @@ contract Router {
         pools[poolId].queue.entries[_tail] = entry;
     }
 
-    function enter(uint256 poolId, uint32 fee) external payable {
+    function enter(uint256 poolId, uint32 fee) public payable {
         require(poolId < pools.length, "err, Router::enter: no such pool");
         require(msg.value == QUEUE_BOND, "err, Router::enter: wrong bond");
         require(fee <= (QUEUE_LENGTH - queueLength(poolId)) * QUEUE_FEE_STEP, "err, Router::enter: wrong fee");
@@ -115,3 +123,8 @@ contract Router {
         queuePush(poolId, entry);
     }
 }
+
+/**
+ * Есть очередь из блессеров для определенного пула. Блессер может войти в очередь если она не полная,
+ * заложив 1 эфириум. Для определенного батча есть главный блессер.
+ */
