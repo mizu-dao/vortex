@@ -13,12 +13,11 @@ contract Router {
 
     struct Queue {
         mapping(uint256 => QueueEntry) entries;
-        uint128 head;
-        uint128 tail;
+        uint256 tail;
     }
 
     struct Batch {
-        mapping(uint256 => uint256) blessing;
+        uint256 blessing;
         uint256 numberOfClaims;
     }
 
@@ -51,17 +50,18 @@ contract Router {
 
     uint256 constant QUEUE_BOND = 1 ether;
     uint256 constant QUEUE_FEE_STEP = 2000;
-    uint32 constant QUEUE_LENGTH = 100;
+    uint32 constant MAX_QUEUE_LENGTH = 100;
+    uint32 constant GRACE_PERIOD = 16;
 
     uint32 constant BATCH_FREQUENCY = 2400;
+
+    uint32 constant GAS_MAX = 300_000_000;
 
     /*//////////////////////////////////////////////////////////////
                         Contract storage & logic
     //////////////////////////////////////////////////////////////*/
 
     Pool[] pools;
-
-    mapping(address => uint256) balances;
 
     function createPool(address[] calldata claimKinds) public returns (uint256) {
         uint256 curLength = pools.length;
@@ -75,56 +75,36 @@ contract Router {
         return curLength;
     }
 
-    function withdraw(uint256 amount) external Update {
-        balances[msg.sender] -= amount;
+    function enterQueue(uint256 poolId, uint32 fee) public payable {
+        require(poolId < pools.length, "err, Router::enterQueue: no such pool");
+        require(msg.value == QUEUE_BOND, "err, Router::enterQueue: wrong bond");
 
-        (bool success,) = payable(msg.sender).call{value: amount}("");
-        require(success, "err, Router::withdraw: failed to withdraw");
+        uint256 tail = pools[poolId].queue.tail;
+        uint256 head = _head() + 1;
+
+        if (tail <= head) {
+            require(fee <= MAX_QUEUE_LENGTH * QUEUE_FEE_STEP, "err, Router::enterQueue: wrong fee");
+
+            pools[poolId].queue.entries[head % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, fee);
+            pools[poolId].queue.tail = head + 1;
+        } else {
+            require(fee <= (MAX_QUEUE_LENGTH - (tail - head)) * QUEUE_FEE_STEP, "err, Router::enterQueue: wrong fee");
+
+            pools[poolId].queue.entries[tail % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, fee);
+            pools[poolId].queue.tail = tail + 1;
+        }
     }
 
-    function withdrawAll() external Update {
-        uint256 amount = balances[msg.sender];
-        balances[msg.sender] = 0;
+    function bless(uint256 poolId, uint256[] calldata bless) public payable Update {
+        require(msg.value == avgBaseFee * GAS_MAX, "err: Router::bless: wrong collateral");
 
-        (bool success,) = payable(msg.sender).call{value: amount}("");
-        require(success, "err, Router::withdrawAll: failed to withdraw");
+        uint256 head = _head();
+        // require(pools[poolId].queue.entries[head] == msg.)
     }
 
-    function queueLength(uint256 poolId) public view returns (uint256) {
-        Queue storage queue = pools[poolId].queue;
-        return (queue.tail + QUEUE_LENGTH - queue.head) % QUEUE_LENGTH;
-    }
+    function slash(uint256 poolId, uint256[] calldata bless, uint256 wrongIndex) public {}
 
-    function queuePop(uint256 poolId) internal Update returns (QueueEntry memory) {
-        uint128 _head = pools[poolId].queue.head;
-        uint128 _tail = pools[poolId].queue.tail;
-        require(_head != _tail, "err, Router::queuePop: queue is empty");
-
-        pools[poolId].queue.head = (_head + 1) % QUEUE_LENGTH;
-
-        return pools[poolId].queue.entries[_head];
-    }
-
-    function queuePush(uint256 poolId, QueueEntry memory entry) internal Update {
-        uint128 _head = pools[poolId].queue.head;
-        uint128 _tail = pools[poolId].queue.tail;
-        require((_tail + 1 + QUEUE_LENGTH - _head) % QUEUE_LENGTH != 0, "err, Router::queuePush: queue is full");
-
-        pools[poolId].queue.tail = (_tail + 1) % QUEUE_LENGTH;
-        pools[poolId].queue.entries[_tail] = entry;
-    }
-
-    function enter(uint256 poolId, uint32 fee) public payable {
-        require(poolId < pools.length, "err, Router::enter: no such pool");
-        require(msg.value == QUEUE_BOND, "err, Router::enter: wrong bond");
-        require(fee <= (QUEUE_LENGTH - queueLength(poolId)) * QUEUE_FEE_STEP, "err, Router::enter: wrong fee");
-
-        QueueEntry memory entry = QueueEntry(msg.sender, fee);
-        queuePush(poolId, entry);
+    function _head() internal view returns (uint256) {
+        return block.number / BATCH_FREQUENCY;
     }
 }
-
-/**
- * Есть очередь из блессеров для определенного пула. Блессер может войти в очередь если она не полная,
- * заложив 1 эфириум. Для определенного батча есть главный блессер.
- */
