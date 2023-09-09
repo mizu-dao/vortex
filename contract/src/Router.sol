@@ -17,14 +17,20 @@ contract Router {
     }
 
     struct Batch {
-        uint256 blessing;
-        uint256 numberOfClaims;
+        uint224 blessing;
+        uint32 numberOfClaims;
     }
 
     struct Pool {
         mapping(address => bool) claimKinds;
         Queue queue;
+        ClaimCounter claimCounter;
         mapping(uint256 => Batch) batches;
+    }
+
+    struct ClaimCounter {
+        uint128 counter;
+        uint128 lastUpdate;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -93,6 +99,22 @@ contract Router {
             pools[poolId].queue.entries[tail % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, fee);
             pools[poolId].queue.tail = tail + 1;
         }
+    }
+
+    function addClaims(uint32 numClaims, uint256 poolId) external payable returns (uint256) {
+        require(pools[poolId].claimKinds[msg.sender]);
+        uint256 head = _head();
+        require(msg.value == numClaims * pools[poolId].queue.entries[head].fee);
+        require(pools[poolId].queue.tail > head);
+        ClaimCounter memory _claimCounter = pools[poolId].claimCounter;
+        if (_claimCounter.lastUpdate < head) {
+            _claimCounter.lastUpdate = uint128(head);
+            _claimCounter.counter = numClaims;
+        } else {
+            _claimCounter.counter += numClaims;
+        }
+        pools[poolId].claimCounter = _claimCounter;
+        return _claimCounter.counter;
     }
 
     function bless(uint256 poolId, uint256[] calldata bless) public payable Update {
