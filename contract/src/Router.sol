@@ -8,6 +8,7 @@ contract Router {
 
     struct QueueEntry {
         address guy;
+        uint256 collateral;
         uint32 fee;
         uint32 numClaims;
     }
@@ -22,11 +23,6 @@ contract Router {
         Queue queue;
         mapping(uint256 => uint256) batches;
     }
-
-    // struct ClaimCounter {
-    //     uint128 counter;
-    //     uint128 lastUpdate;
-    // }
 
     /*//////////////////////////////////////////////////////////////
                   Helper fns, modifiers and constants
@@ -91,12 +87,12 @@ contract Router {
         if (tail <= head) {
             require(fee <= MAX_QUEUE_LENGTH * QUEUE_FEE_STEP, "err, Router::enterQueue: wrong fee");
 
-            pools[poolId].queue.entries[head % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, fee, 0);
+            pools[poolId].queue.entries[head % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, 0, fee, 0);
             pools[poolId].queue.tail = head + 1;
         } else {
             require(fee <= (MAX_QUEUE_LENGTH - (tail - head)) * QUEUE_FEE_STEP, "err, Router::enterQueue: wrong fee");
 
-            pools[poolId].queue.entries[tail % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, fee, 0);
+            pools[poolId].queue.entries[tail % (MAX_QUEUE_LENGTH + GRACE_PERIOD)] = QueueEntry(msg.sender, 0, fee, 0);
             pools[poolId].queue.tail = tail + 1;
         }
     }
@@ -113,7 +109,8 @@ contract Router {
     }
 
     function bless(uint256 poolId, uint256[] calldata blessings) public payable Update {
-        require(msg.value == avgBaseFee * GAS_MAX, "err: Router::bless: wrong collateral");
+        uint256 collateral = avgBaseFee * GAS_MAX;
+        require(msg.value == collateral, "err: Router::bless: wrong collateral");
         require(poolId < pools.length, "err, Router::bless: no such pool");
 
         uint256 head = _head() % (MAX_QUEUE_LENGTH + GRACE_PERIOD);
@@ -127,11 +124,56 @@ contract Router {
             require(slotBlockNumber >= CANONICAL_BLESSING_PERIOD);
         }
 
+        pools[poolId].queue.entries[head].collateral = collateral;
         pools[poolId].queue.entries[head].guy = msg.sender;
         pools[poolId].batches[head] = uint256(keccak256(abi.encodePacked(blessings)));
     }
 
-    function slash(uint256 poolId, uint256[] calldata blessings, uint256 wrongIndex) public {}
+    function slash(
+        uint256 poolId,
+        uint256[] calldata blessings,
+        uint256 challengeIndex,
+        bool statement,
+        address payable challenger
+    ) public Update {
+        require(poolId < pools.length, "err, Router::slash: no such pool");
+
+        uint256 head = _head() % (MAX_QUEUE_LENGTH + GRACE_PERIOD);
+
+        uint256 blessing = uint256(keccak256(abi.encodePacked(blessings)));
+        require(pools[poolId].batches[head] == blessing);
+
+        require(challengeIndex < pools[poolId].queue.entries[head].numClaims);
+
+        uint256 x = challengeIndex / 256;
+        uint256 y = challengeIndex - x * 256;
+
+        bool claimedStatement;
+
+        if (x < blessings.length) {
+            claimedStatement = ((blessings[x] >> y) & 1 == 1);
+        }
+
+        require(claimedStatement != statement);
+
+        pools[poolId].batches[head] = 0;
+
+        uint256 collateral = 
+        (bool success,) = challenger.call{value: collateral}("");
+        require(success);
+    }
+
+    function withdraw(uint256 poolId, uint256 batchId) public {
+        require(poolId < pools.length, "err, Router::slash: no such pool");
+
+        uint256 head = _head();
+        require(batchId < head);
+
+        require()
+
+        address guy = pools[poolId].queue.entries[batchId].guy;
+        require(msg.sender == guy);
+    }
 
     function _head() internal view returns (uint256) {
         return block.number / BATCH_FREQUENCY;
