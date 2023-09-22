@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.19;
 
-import "./ClaimKind.sol";
+import "./IClaimKind.sol";
 import "./Router.sol";
 
-contract ExampleClaimKind is ClaimKind {
+contract ExampleClaimKind is IClaimKind {
     uint8 constant UNDEFINED_STATUS_CODE = 2;
     uint8 constant NO_BLESSER_STATUS_CODE = 3;
     uint8 constant EXPIRED_STATUS_CODE = 4;

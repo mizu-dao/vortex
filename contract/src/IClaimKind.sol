@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.19;
 
-interface ClaimKind {
+interface IClaimKind {
     function depositClaim(uint256[] calldata args, uint256 poolId) external returns (uint32, uint256, uint256);
 
     function status(uint256 claimId) external view returns (uint8);
